@@ -8,49 +8,55 @@
 // hardcoded URLs from being scattered across the codebase.
 
 // -----------------------------------------------------------------------------
-// Environment Detection
+// Environment Detection & Type Safety
 // -----------------------------------------------------------------------------
+declare const process: {
+  env: {
+    NODE_ENV?: string;
+    REACT_APP_WEBSOCKET_URL?: string;
+    REACT_APP_API_URL?: string;
+  };
+};
+
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
 // -----------------------------------------------------------------------------
-// Service Base URLs
+// Service Base URLs - CORRECT ARCHITECTURE
 // -----------------------------------------------------------------------------
-// In development, we connect to the locally running Python services.
-// In production, these would be replaced with the deployed service URLs.
+// Architecture: Go Engine → pulseintel_websocket_service.py (Real-time WebSocket data)
+//              pulseintel_api_service.py (Independent REST API service)
 
 const API_BASE_URLS = {
-  // Service 1: Real-Time Data (WebSocket)
-  // Handles live market data streams.
-  WEBSOCKET_SERVICE: IS_DEVELOPMENT
+  // Service 1: WebSocket Service (Connected to Go Engine)
+  // Connects to Go engine, processes real-time data (VWAP, CVD), forwards to frontend
+  WEBSOCKET_SERVICE: process.env.REACT_APP_WEBSOCKET_URL || (IS_DEVELOPMENT
     ? 'ws://localhost:8000'
-    : 'wss://your-production-websocket-service.com',
+    : 'wss://your-production-websocket-service.com'),
 
-  // Service 2: REST API Service (Main API)
-  // Handles all REST API endpoints including market data, news, etc.
-  REST_API_SERVICE: IS_DEVELOPMENT
+  // Service 2: REST API Service (Independent)
+  // Pulls external REST API data (CoinGecko, Binance, etc.) to avoid bottlenecks
+  REST_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
     ? 'http://localhost:8001'
-    : 'https://your-production-api.com',
+    : 'https://your-production-api.com'),
 
-  // Service 3: Analytics API (REST)
-  // Handles computed analytics and cached data.
-  ANALYTICS_API_SERVICE: IS_DEVELOPMENT
+  // All REST endpoints route through the API service
+  ANALYTICS_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
     ? 'http://localhost:8001'
-    : 'https://your-production-analytics-api.com',
+    : 'https://your-production-analytics-api.com'),
 
-  // Service 4: External Data API (REST)
-  // Handles third-party API integrations (news, global data).
-  EXTERNAL_API_SERVICE: IS_DEVELOPMENT
+  EXTERNAL_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
     ? 'http://localhost:8001'
-    : 'https://your-production-external-api.com',
+    : 'https://your-production-external-api.com'),
 
-  // Service 5: Historical Data API (REST)
-  // Handles historical data and backtesting.
-  HISTORICAL_API_SERVICE: IS_DEVELOPMENT
+  HISTORICAL_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
     ? 'http://localhost:8001'
-    : 'https://your-production-historical-api.com',
+    : 'https://your-production-historical-api.com'),
+
+  MAIN_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
+    ? 'http://localhost:8001'
+    : 'https://your-production-api.com'),
     
-  // Legacy or other services (e.g., the service on port 8888)
-  // We can define fallbacks or alternative endpoints here.
+  // Legacy services
   LEGACY_PRECISION9_API: IS_DEVELOPMENT
     ? 'http://localhost:8888'
     : 'https://your-legacy-api.com',

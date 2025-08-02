@@ -5,9 +5,10 @@ import websockets
 from collections import defaultdict
 
 # --- Configuration ---
-GO_STREAM_URL = "ws://localhost:8899/ws"
+import os
+GO_STREAM_URL = os.getenv("GO_STREAM_URL", "ws://localhost:8899/ws")
 FRONTEND_HOST = "0.0.0.0"
-FRONTEND_PORT = 8000
+FRONTEND_PORT = int(os.getenv("PORT", 8000))
 
 # --- State Management ---
 # This will store the connected frontend clients for each channel

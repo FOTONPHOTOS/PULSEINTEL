@@ -1,6 +1,22 @@
+# Core FastAPI and WebSocket dependencies
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 websockets==12.0
 python-multipart==0.0.6
 pydantic==2.5.0
+
+# HTTP client for external API calls
+httpx==0.25.2
+
+# RSS feed parsing for news fetcher
+feedparser==6.0.10
+aiohttp==3.9.1
+
+# CORS middleware (included in FastAPI but explicit for clarity)
+# python-cors==1.7.0  # Not needed, CORS is built into FastAPI
+
+# Logging
 python-json-logger==2.0.7
+
+# Standard library dependencies (no installation needed)
+# asyncio, json, time, collections, os, random, math, re, datetime, typing

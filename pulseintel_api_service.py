@@ -8,8 +8,9 @@ import random
 import math
 
 # --- Configuration ---
+import os
 API_HOST = "0.0.0.0"
-API_PORT = 8001
+API_PORT = int(os.getenv("PORT", 8001))
 
 # --- Caching ---
 cache = {}
