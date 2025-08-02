@@ -1,4 +1,4 @@
-# Dockerfile for PulseIntel REST API Service
+# Dockerfile for PulseIntel WebSocket Service
 FROM python:3.11-slim
 
 # Set working directory
@@ -16,20 +16,19 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy API service and news fetcher
-COPY pulseintel_api_service.py .
-COPY real_news_fetcher.py .
+# Copy WebSocket service
+COPY pulseintel_websocket_service.py .
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash pulseintel
 USER pulseintel
 
-# Expose the API port
-EXPOSE 8888
+# Expose WebSocket port
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8888/health || exit 1
+  CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the API service
-CMD ["python", "pulseintel_api_service.py"]
+# Run the WebSocket service
+CMD ["python", "pulseintel_websocket_service.py"]

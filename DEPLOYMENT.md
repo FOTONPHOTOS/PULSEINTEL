@@ -263,6 +263,30 @@ sudo certbot --nginx -d your-domain.com
 
 ---
 
+## 🚂 Railway Deployment (Recommended)
+
+### **Advantages:**
+- Simple deployment process
+- Built-in CI/CD
+- Automatic scaling
+- Affordable pricing
+- Docker support
+
+### **Architecture:**
+- **4 Services**: Go Stream + 2 Python + React Frontend
+- **Internal networking**: Services communicate via Railway internal URLs
+- **External access**: Public URLs for frontend connections
+
+### **Quick Deployment:**
+1. Connect GitHub repository to Railway
+2. Create 4 services with respective Dockerfiles
+3. Configure environment variables
+4. Deploy automatically on git push
+
+**See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) for detailed instructions.**
+
+---
+
 ## ☁️ AWS Deployment
 
 ### **Advantages:**
@@ -272,42 +296,48 @@ sudo certbot --nginx -d your-domain.com
 - Enterprise-grade security
 
 ### **Architecture:**
-- **EC2**: Application servers
+- **ECS**: Container orchestration
 - **ALB**: Load balancer
-- **RDS**: Database (if needed)
+- **ECR**: Container registry
 - **CloudFront**: CDN for frontend
 - **Route 53**: DNS management
 
-### **Step 1: Create EC2 Instance**
-1. Launch EC2 instance (t3.medium recommended)
-2. Configure security groups:
-   - Port 22 (SSH)
-   - Port 80 (HTTP)
-   - Port 443 (HTTPS)
-   - Port 8000 (WebSocket)
-   - Port 8888 (API)
-   - Port 8899 (Stream)
+### **Step 1: Setup ECR Repositories**
+1. Create ECR repositories for each service:
+   - `pulseintel-stream`
+   - `pulseintel-websocket`
+   - `pulseintel-api`
+   - `pulseintel-frontend`
 
-### **Step 2: Setup Application**
-Follow similar steps as Hetzner deployment for application setup.
+### **Step 2: Build and Push Images**
+```bash
+# Build and push Go Stream Engine
+docker build -f Dockerfile.go -t pulseintel-stream .
+docker tag pulseintel-stream:latest [account].dkr.ecr.[region].amazonaws.com/pulseintel-stream:latest
+docker push [account].dkr.ecr.[region].amazonaws.com/pulseintel-stream:latest
 
-### **Step 3: Create Application Load Balancer**
-1. Create ALB in AWS Console
-2. Configure target groups for each service
-3. Setup health checks
-4. Configure SSL certificate
+# Repeat for other services...
+```
 
-### **Step 4: Setup CloudFront (Optional)**
-1. Create CloudFront distribution
-2. Point to ALB as origin
-3. Configure caching rules
-4. Setup custom domain
+### **Step 3: Create ECS Cluster**
+1. Create ECS cluster with Fargate
+2. Define task definitions for each service
+3. Configure service discovery
+4. Setup load balancer target groups
 
-### **Step 5: Auto Scaling (Optional)**
-1. Create launch template
-2. Setup Auto Scaling Group
-3. Configure scaling policies
-4. Setup CloudWatch alarms
+### **Step 4: Configure Application Load Balancer**
+1. Create ALB with multiple target groups
+2. Configure routing rules:
+   - `/api/*` → API service
+   - `/ws/*` → WebSocket service
+   - `/*` → Frontend service
+3. Setup SSL certificate
+
+### **Step 5: Deploy Services**
+1. Create ECS services from task definitions
+2. Configure auto-scaling policies
+3. Setup CloudWatch monitoring
+4. Configure health checks
 
 ---
 

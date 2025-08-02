@@ -1,0 +1,106 @@
+# Docker Compose for PulseIntel - Railway Deployment Ready
+version: '3.8'
+
+services:
+  # Go Stream Engine - Data Ingestion
+  pulseintel-stream:
+    build:
+      context: .
+      dockerfile: Dockerfile.go
+    container_name: pulseintel-stream
+    ports:
+      - "8899:8899"
+    environment:
+      - GO_ENV=production
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8899/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pulseintel-network
+
+  # WebSocket Service - Real-time Data Broadcasting
+  pulseintel-websocket:
+    build:
+      context: .
+      dockerfile: Dockerfile.websocket
+    container_name: pulseintel-websocket
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHON_ENV=production
+      - GO_STREAM_URL=ws://pulseintel-stream:8899/ws
+      - FRONTEND_HOST=0.0.0.0
+      - FRONTEND_PORT=8000
+    depends_on:
+      - pulseintel-stream
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pulseintel-network
+
+  # REST API Service - HTTP Endpoints
+  pulseintel-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: pulseintel-api
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHON_ENV=production
+      - API_HOST=0.0.0.0
+      - API_PORT=8888
+      - WEBSOCKET_SERVICE_URL=ws://pulseintel-websocket:8000
+    depends_on:
+      - pulseintel-websocket
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pulseintel-network
+
+  # React Frontend - Web Interface
+  pulseintel-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: pulseintel-frontend
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - pulseintel-api
+      - pulseintel-websocket
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pulseintel-network
+
+networks:
+  pulseintel-network:
+    driver: bridge
+    name: pulseintel-network
+
+volumes:
+  pulseintel-data:
+    name: pulseintel-data

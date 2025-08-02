@@ -76,3 +76,9 @@ test_*.ps1
 *.bak
 *.backup
 *_backup.*
+
+# Railway deployment files (keep only one per service)
+railway-*.json
+
+# Docker build cache
+.dockerignore
