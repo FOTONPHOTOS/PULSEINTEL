@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
-	"p9_microstream/pkg/batcher"
+	"pulseintel/pkg/batcher"
 )
 
 // Broadcaster manages a set of WebSocket connections and broadcasts messages to them.

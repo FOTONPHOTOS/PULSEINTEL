@@ -10,7 +10,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"p9_microstream/internal/config"
+	"pulseintel/internal/config"
 )
 
 // ============================================================================

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"p9_microstream/internal/events"
+	"pulseintel/internal/events"
 
 	"github.com/redis/go-redis/v9"
 )

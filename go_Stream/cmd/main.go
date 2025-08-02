@@ -17,11 +17,11 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"p9_microstream/internal/analytics"
-	"p9_microstream/internal/config"
-	"p9_microstream/internal/exchanges"
-	"p9_microstream/internal/supervisor"
-	"p9_microstream/pkg/broadcaster"
+	"pulseintel/internal/analytics"
+	"pulseintel/internal/config"
+	"pulseintel/internal/exchanges"
+	"pulseintel/internal/supervisor"
+	"pulseintel/pkg/broadcaster"
 )
 
 // P9MicroStream represents the main application - REAL MARKET DATA PIPELINE

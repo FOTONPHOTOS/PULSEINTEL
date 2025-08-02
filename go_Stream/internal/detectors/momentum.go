@@ -13,9 +13,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	"p9_microstream/internal/analytics"
-	"p9_microstream/internal/publisher"
-	"p9_microstream/internal/utils"
+	"pulseintel/internal/analytics"
+	"pulseintel/internal/publisher"
+	"pulseintel/internal/utils"
 )
 
 // MomentumDetector detects price momentum and volume spikes

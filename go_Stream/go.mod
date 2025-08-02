@@ -1,4 +1,4 @@
-module p9_microstream
+module pulseintel
 
 go 1.22
 
@@ -11,8 +11,6 @@ require (
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
 )
-
-replace p9_microstream => ./
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

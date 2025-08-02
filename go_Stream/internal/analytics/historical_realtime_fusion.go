@@ -13,8 +13,8 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	// Internal modules
-	"p9_microstream/internal/config"
-	"p9_microstream/internal/events"
+	"pulseintel/internal/config"
+	"pulseintel/internal/events"
 )
 
 // ============================================================================

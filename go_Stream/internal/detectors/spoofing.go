@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	"p9_microstream/internal/publisher"
+	"pulseintel/internal/publisher"
 )
 
 // minInt returns the minimum of two integers

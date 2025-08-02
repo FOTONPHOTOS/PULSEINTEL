@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"p9_microstream/internal/analytics"
+	"pulseintel/internal/analytics"
 )
 
 // Trade represents a real trade event for VWAP calculation

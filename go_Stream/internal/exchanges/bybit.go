@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"p9_microstream/internal/analytics"
+	"pulseintel/internal/analytics"
 
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
