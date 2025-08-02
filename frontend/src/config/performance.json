@@ -1,0 +1,23 @@
+{
+  "api": {
+    "refresh_intervals": {
+      "critical_data": 5000,
+      "market_data": 5000,
+      "news": 30000,
+      "static_data": 60000
+    },
+    "timeout": 10000,
+    "retry_attempts": 3,
+    "cache_duration": 5000
+  },
+  "websocket": {
+    "reconnect_interval": 5000,
+    "ping_interval": 30000,
+    "max_reconnect_attempts": 10
+  },
+  "ui": {
+    "loading_timeout": 10000,
+    "skeleton_duration": 2000,
+    "chart_update_throttle": 100
+  }
+}

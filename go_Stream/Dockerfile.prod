@@ -1,0 +1,18 @@
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o p9_microstream cmd/main.go
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+
+COPY --from=builder /app/p9_microstream .
+COPY --from=builder /app/configs ./configs
+
+EXPOSE 8080 9090
+CMD ["./p9_microstream"]

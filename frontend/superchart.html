@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseIntel SuperChart - Professional Trading Interface</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+            border-right: 2px solid #00ff88;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .tagline {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .nav-section {
+            padding: 15px;
+        }
+
+        .nav-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .symbol-search {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .exchange-list {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .exchange-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .exchange-name {
+            font-weight: 500;
+        }
+
+        .exchange-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+        }
+
+        .exchange-status.offline {
+            background: #ff4444;
+        }
+
+        /* Main Chart Area */
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #0a0a0a;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid #333;
+        }
+
+        .symbol-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .current-symbol {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .price-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .current-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .price-change {
+            font-size: 14px;
+            color: #00ff88;
+        }
+
+        .price-change.negative {
+            color: #ff4444;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .timeframe-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .timeframe-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeframe-btn:hover,
+        .timeframe-btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .chart-type-selector {
+            select {
+                padding: 8px 12px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid #333;
+                border-radius: 4px;
+                color: #e0e0e0;
+            }
+        }
+
+        .indicators-panel {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .indicator-btn {
+            padding: 6px 12px;
+            margin: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 4px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-btn:hover,
+        .indicator-btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        .chart-main {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #00ff88;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid #333;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+        }
+
+        .status-dot.disconnected {
+            background: #ff4444;
+        }
+
+        .market-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .app-container {
+                grid-template-columns: 250px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+        }
+
+        /* Exchange Badges */
+        .exchange-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .exchange-badge {
+            padding: 4px 8px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #00ff88;
+        }
+
+        /* Volume Profile Styles */
+        .volume-profile {
+            position: absolute;
+            right: 10px;
+            top: 50px;
+            width: 100px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🚀 PulseIntel</div>
+                <div class="tagline">SuperChart Pro</div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-section">
+                <div class="nav-title">Navigation</div>
+                <div class="nav-item active" onclick="switchPage('superchart')">
+                    <span class="nav-icon">📈</span>
+                    <span>SuperChart</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('dashboard')">
+                    <span class="nav-icon">🖥️</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('scanner')">
+                    <span class="nav-icon">🔍</span>
+                    <span>Market Scanner</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('arbitrage')">
+                    <span class="nav-icon">⚡</span>
+                    <span>Arbitrage</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('alerts')">
+                    <span class="nav-icon">🔔</span>
+                    <span>Alerts</span>
+                </div>
+            </div>
+
+            <!-- Symbol Search -->
+            <div class="symbol-search">
+                <input type="text" class="search-input" placeholder="Search symbols..." 
+                       oninput="searchSymbols(this.value)" id="symbolSearch">
+                <div class="exchange-badges">
+                    <span class="exchange-badge">17+ Exchanges</span>
+                    <span class="exchange-badge">Real-time</span>
+                </div>
+            </div>
+
+            <!-- Exchange List -->
+            <div class="nav-section">
+                <div class="nav-title">Connected Exchanges (17)</div>
+                <div class="exchange-list" id="exchangeList">
+                    <!-- Exchanges will be populated here -->
+                </div>
+            </div>
+
+            <!-- Chart Tools -->
+            <div class="nav-section">
+                <div class="nav-title">Chart Tools</div>
+                <div class="nav-item" onclick="toggleDrawingTools()">
+                    <span class="nav-icon">✏️</span>
+                    <span>Drawing Tools</span>
+                </div>
+                <div class="nav-item" onclick="toggleIndicators()">
+                    <span class="nav-icon">📊</span>
+                    <span>Indicators</span>
+                </div>
+                <div class="nav-item" onclick="toggleVolumeProfile()">
+                    <span class="nav-icon">📶</span>
+                    <span>Volume Profile</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart Area -->
+        <div class="chart-container">
+            <!-- Chart Header -->
+            <div class="chart-header">
+                <div class="symbol-info">
+                    <div class="current-symbol" id="currentSymbol">BTCUSDT</div>
+                    <div class="price-info">
+                        <div class="current-price" id="currentPrice">$0.00</div>
+                        <div class="price-change" id="priceChange">+0.00%</div>
+                    </div>
+                </div>
+
+                <div class="chart-controls">
+                    <!-- Timeframe Buttons -->
+                    <div class="timeframe-buttons">
+                        <button class="timeframe-btn" onclick="changeTimeframe('1m')">1m</button>
+                        <button class="timeframe-btn" onclick="changeTimeframe('5m')">5m</button>
+                        <button class="timeframe-btn active" onclick="changeTimeframe('15m')">15m</button>
+                        <button class="timeframe-btn" onclick="changeTimeframe('1h')">1h</button>
+                        <button class="timeframe-btn" onclick="changeTimeframe('4h')">4h</button>
+                        <button class="timeframe-btn" onclick="changeTimeframe('1d')">1D</button>
+                    </div>
+
+                    <!-- Chart Type Selector -->
+                    <div class="chart-type-selector">
+                        <select onchange="changeChartType(this.value)" id="chartTypeSelect">
+                            <option value="candlestick">Candlestick</option>
+                            <option value="line">Line</option>
+                            <option value="area">Area</option>
+                            <option value="heikin-ashi">Heikin Ashi</option>
+                            <option value="hollow">Hollow Candles</option>
+                        </select>
+                    </div>
+
+                    <!-- Indicators Panel -->
+                    <div class="indicators-panel">
+                        <button class="indicator-btn" onclick="toggleIndicator('RSI')">RSI</button>
+                        <button class="indicator-btn" onclick="toggleIndicator('MACD')">MACD</button>
+                        <button class="indicator-btn" onclick="toggleIndicator('BB')">Bollinger</button>
+                        <button class="indicator-btn" onclick="toggleIndicator('MA')">MA</button>
+                        <button class="indicator-btn" onclick="toggleIndicator('Volume')">Volume</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Wrapper -->
+            <div class="chart-wrapper">
+                <div class="chart-main" id="chartContainer"></div>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="connection-status">
+                    <div class="status-dot" id="connectionDot"></div>
+                    <span id="connectionText">Connected to 17 exchanges</span>
+                </div>
+                <div class="market-stats">
+                    <span>Volume: <span id="volumeDisplay">0</span></span>
+                    <span>High: <span id="highDisplay">$0.00</span></span>
+                    <span>Low: <span id="lowDisplay">$0.00</span></span>
+                    <span>Last Update: <span id="lastUpdate">--</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let chart = null;
+        let candlestickSeries = null;
+        let volumeSeries = null;
+        let websocket = null;
+        let currentSymbol = 'BTCUSDT';
+        let currentTimeframe = '15m';
+        let currentChartType = 'candlestick';
+        let activeIndicators = new Set();
+        let indicators = {};
+        let isLoading = false;
+
+        // 17+ Exchanges configuration
+        const exchanges = [
+            { name: 'Binance', id: 'binance', status: 'online' },
+            { name: 'Bybit', id: 'bybit', status: 'online' },
+            { name: 'OKX', id: 'okx', status: 'online' },
+            { name: 'Gate.io', id: 'gate', status: 'online' },
+            { name: 'Bitget', id: 'bitget', status: 'online' },
+            { name: 'Bitfinex', id: 'bitfinex', status: 'online' },
+            { name: 'Coinbase', id: 'coinbase', status: 'online' },
+            { name: 'Kraken', id: 'kraken', status: 'online' },
+            { name: 'KuCoin', id: 'kucoin', status: 'online' },
+            { name: 'Hyperliquid', id: 'hyperliquid', status: 'online' },
+            { name: 'WhiteBIT', id: 'whitebit', status: 'online' },
+            { name: 'BitMEX', id: 'bitmex', status: 'online' },
+            { name: 'MEXC', id: 'mexc', status: 'online' },
+            { name: 'Crypto.com', id: 'cryptocom', status: 'online' },
+            { name: 'Deribit', id: 'deribit', status: 'online' },
+            { name: 'HTX', id: 'htx', status: 'online' },
+            { name: 'CoinEx', id: 'coinex', status: 'online' }
+        ];
+
+        // Initialize the application
+        function initializeApp() {
+            console.log('🚀 Initializing PulseIntel SuperChart...');
+            
+            // Initialize chart
+            initializeChart();
+            
+            // Populate exchange list
+            populateExchangeList();
+            
+            // Connect to WebSocket
+            connectWebSocket();
+            
+            // Load initial data
+            loadChartData(currentSymbol, currentTimeframe);
+            
+            console.log('✅ SuperChart initialized successfully');
+        }
+
+        // Initialize TradingView Lightweight Charts
+        function initializeChart() {
+            const chartContainer = document.getElementById('chartContainer');
+            
+            chart = LightweightCharts.createChart(chartContainer, {
+                width: chartContainer.clientWidth,
+                height: chartContainer.clientHeight,
+                layout: {
+                    background: { color: '#000000' },
+                    textColor: '#e0e0e0',
+                },
+                grid: {
+                    vertLines: { color: '#1a1a1a' },
+                    horzLines: { color: '#1a1a1a' },
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal,
+                },
+                rightPriceScale: {
+                    borderColor: '#333333',
+                    textColor: '#e0e0e0',
+                },
+                timeScale: {
+                    borderColor: '#333333',
+                    textColor: '#e0e0e0',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                handleScroll: {
+                    mouseWheel: true,
+                    pressedMouseMove: true,
+                },
+                handleScale: {
+                    axisPressedMouseMove: true,
+                    mouseWheel: true,
+                    pinch: true,
+                },
+            });
+
+            // Create candlestick series
+            candlestickSeries = chart.addCandlestickSeries({
+                upColor: '#00ff88',
+                downColor: '#ff4444',
+                borderDownColor: '#ff4444',
+                borderUpColor: '#00ff88',
+                wickDownColor: '#ff4444',
+                wickUpColor: '#00ff88',
+            });
+
+            // Create volume series
+            volumeSeries = chart.addHistogramSeries({
+                color: '#26a69a',
+                priceFormat: {
+                    type: 'volume',
+                },
+                priceScaleId: '',
+                scaleMargins: {
+                    top: 0.8,
+                    bottom: 0,
+                },
+            });
+
+            // Handle chart clicks
+            chart.subscribeClick((param) => {
+                if (param.time && param.point) {
+                    console.log('Chart clicked at:', param.time, param.point);
+                }
+            });
+
+            // Handle crosshair move
+            chart.subscribeCrosshairMove((param) => {
+                if (param.time && param.point && candlestickSeries) {
+                    const data = param.seriesData.get(candlestickSeries);
+                    if (data) {
+                        updatePriceDisplay(data);
+                    }
+                }
+            });
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                chart.applyOptions({
+                    width: chartContainer.clientWidth,
+                    height: chartContainer.clientHeight,
+                });
+            });
+        }
+
+        // Populate exchange list
+        function populateExchangeList() {
+            const exchangeList = document.getElementById('exchangeList');
+            exchangeList.innerHTML = '';
+
+            exchanges.forEach(exchange => {
+                const exchangeItem = document.createElement('div');
+                exchangeItem.className = 'exchange-item';
+                exchangeItem.innerHTML = `
+                    <span class="exchange-name">${exchange.name}</span>
+                    <div class="exchange-status ${exchange.status === 'offline' ? 'offline' : ''}"></div>
+                `;
+                exchangeItem.onclick = () => selectExchange(exchange.id);
+                exchangeList.appendChild(exchangeItem);
+            });
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            console.log('🔌 Connecting to WebSocket...');
+            
+            try {
+                // Connect to PulseIntel WebSocket API
+                websocket = new WebSocket('ws://localhost:8888/ws/realtime');
+                
+                websocket.onopen = () => {
+                    console.log('✅ WebSocket connected');
+                    updateConnectionStatus(true);
+                    
+                    // Subscribe to current symbol
+                    subscribeToSymbol(currentSymbol);
+                };
+                
+                websocket.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleRealtimeData(data);
+                    } catch (error) {
+                        console.error('❌ WebSocket message error:', error);
+                    }
+                };
+                
+                websocket.onerror = (error) => {
+                    console.error('❌ WebSocket error:', error);
+                    updateConnectionStatus(false);
+                };
+                
+                websocket.onclose = () => {
+                    console.log('🔌 WebSocket disconnected');
+                    updateConnectionStatus(false);
+                    
+                    // Attempt reconnection after 5 seconds
+                    setTimeout(connectWebSocket, 5000);
+                };
+                
+            } catch (error) {
+                console.error('❌ WebSocket connection failed:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // Subscribe to symbol updates
+        function subscribeToSymbol(symbol) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                const subscription = {
+                    action: 'subscribe',
+                    symbol: symbol,
+                    channels: ['ticker', 'trades', 'orderbook', 'kline']
+                };
+                websocket.send(JSON.stringify(subscription));
+                console.log(`📡 Subscribed to ${symbol}`);
+            }
+        }
+
+        // Handle real-time data
+        function handleRealtimeData(data) {
+            switch (data.type) {
+                case 'ticker':
+                    updateTicker(data);
+                    break;
+                case 'kline':
+                    updateChart(data);
+                    break;
+                case 'trade':
+                    // Handle individual trades
+                    break;
+                case 'orderbook':
+                    // Handle orderbook updates
+                    break;
+                default:
+                    console.log('📊 Unknown data type:', data.type);
+            }
+        }
+
+        // Update ticker display
+        function updateTicker(data) {
+            const priceElement = document.getElementById('currentPrice');
+            const changeElement = document.getElementById('priceChange');
+            const volumeElement = document.getElementById('volumeDisplay');
+            const highElement = document.getElementById('highDisplay');
+            const lowElement = document.getElementById('lowDisplay');
+            const lastUpdateElement = document.getElementById('lastUpdate');
+
+            if (data.price) {
+                priceElement.textContent = `$${parseFloat(data.price).toFixed(2)}`;
+            }
+            
+            if (data.change_percent) {
+                const changePercent = parseFloat(data.change_percent);
+                changeElement.textContent = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                changeElement.className = `price-change ${changePercent >= 0 ? '' : 'negative'}`;
+            }
+            
+            if (data.volume) {
+                volumeElement.textContent = formatVolume(data.volume);
+            }
+            
+            if (data.high) {
+                highElement.textContent = `$${parseFloat(data.high).toFixed(2)}`;
+            }
+            
+            if (data.low) {
+                lowElement.textContent = `$${parseFloat(data.low).toFixed(2)}`;
+            }
+            
+            lastUpdateElement.textContent = new Date().toLocaleTimeString();
+        }
+
+        // Load chart data
+        async function loadChartData(symbol, timeframe) {
+            setLoading(true);
+            
+            try {
+                console.log(`📈 Loading chart data for ${symbol} (${timeframe})`);
+                
+                // Fetch OHLCV data from PulseIntel API
+                const response = await fetch(`http://localhost:8888/api/chart/${symbol}?timeframe=${timeframe}&limit=500`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Transform data for Lightweight Charts
+                const candlestickData = data.ohlcv.map(item => ({
+                    time: item.timestamp,
+                    open: parseFloat(item.open),
+                    high: parseFloat(item.high),
+                    low: parseFloat(item.low),
+                    close: parseFloat(item.close)
+                }));
+                
+                const volumeData = data.ohlcv.map(item => ({
+                    time: item.timestamp,
+                    value: parseFloat(item.volume),
+                    color: item.close > item.open ? '#00ff8844' : '#ff444444'
+                }));
+                
+                // Update chart series
+                candlestickSeries.setData(candlestickData);
+                volumeSeries.setData(volumeData);
+                
+                // Update latest price
+                if (candlestickData.length > 0) {
+                    const latestCandle = candlestickData[candlestickData.length - 1];
+                    updatePriceDisplay(latestCandle);
+                }
+                
+                console.log(`✅ Loaded ${candlestickData.length} candles for ${symbol}`);
+                
+            } catch (error) {
+                console.error('❌ Failed to load chart data:', error);
+                
+                // Load demo data as fallback
+                loadDemoData();
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Load demo data (fallback)
+        function loadDemoData() {
+            console.log('📊 Loading demo data...');
+            
+            const demoData = [];
+            const demoVolume = [];
+            const basePrice = 45000;
+            const now = Math.floor(Date.now() / 1000);
+            
+            for (let i = 500; i > 0; i--) {
+                const timestamp = now - (i * 900); // 15-minute intervals
+                const randomChange = (Math.random() - 0.5) * 1000;
+                const open = basePrice + randomChange;
+                const close = open + (Math.random() - 0.5) * 500;
+                const high = Math.max(open, close) + Math.random() * 200;
+                const low = Math.min(open, close) - Math.random() * 200;
+                const volume = Math.random() * 1000000;
+                
+                demoData.push({
+                    time: timestamp,
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close
+                });
+                
+                demoVolume.push({
+                    time: timestamp,
+                    value: volume,
+                    color: close > open ? '#00ff8844' : '#ff444444'
+                });
+            }
+            
+            candlestickSeries.setData(demoData);
+            volumeSeries.setData(demoVolume);
+            
+            // Update price display with latest demo data
+            if (demoData.length > 0) {
+                const latestCandle = demoData[demoData.length - 1];
+                updatePriceDisplay(latestCandle);
+            }
+        }
+
+        // Update chart with real-time data
+        function updateChart(data) {
+            if (data.symbol !== currentSymbol) return;
+            
+            const candleData = {
+                time: data.timestamp,
+                open: parseFloat(data.open),
+                high: parseFloat(data.high),
+                low: parseFloat(data.low),
+                close: parseFloat(data.close)
+            };
+            
+            const volumeData = {
+                time: data.timestamp,
+                value: parseFloat(data.volume),
+                color: data.close > data.open ? '#00ff8844' : '#ff444444'
+            };
+            
+            candlestickSeries.update(candleData);
+            volumeSeries.update(volumeData);
+            
+            updatePriceDisplay(candleData);
+        }
+
+        // Update price display
+        function updatePriceDisplay(candleData) {
+            const priceElement = document.getElementById('currentPrice');
+            const highElement = document.getElementById('highDisplay');
+            const lowElement = document.getElementById('lowDisplay');
+            
+            if (candleData.close) {
+                priceElement.textContent = `$${candleData.close.toFixed(2)}`;
+            }
+            
+            if (candleData.high) {
+                highElement.textContent = `$${candleData.high.toFixed(2)}`;
+            }
+            
+            if (candleData.low) {
+                lowElement.textContent = `$${candleData.low.toFixed(2)}`;
+            }
+        }
+
+        // Navigation functions
+        function switchPage(page) {
+            console.log(`🔄 Switching to ${page}`);
+            
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Handle page switching logic here
+            if (page !== 'superchart') {
+                // Redirect to other pages when they're ready
+                console.log(`ℹ️ ${page} page not yet implemented`);
+            }
+        }
+
+        // Search symbols
+        function searchSymbols(query) {
+            console.log(`🔍 Searching for: ${query}`);
+            // Implement symbol search functionality
+        }
+
+        // Change timeframe
+        function changeTimeframe(timeframe) {
+            console.log(`⏱️ Changing timeframe to ${timeframe}`);
+            
+            // Update active button
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentTimeframe = timeframe;
+            loadChartData(currentSymbol, currentTimeframe);
+        }
+
+        // Change chart type
+        function changeChartType(chartType) {
+            console.log(`📊 Changing chart type to ${chartType}`);
+            currentChartType = chartType;
+            
+            // Implement chart type switching logic
+            switch (chartType) {
+                case 'line':
+                    // Convert to line chart
+                    break;
+                case 'area':
+                    // Convert to area chart
+                    break;
+                case 'heikin-ashi':
+                    // Implement Heikin Ashi
+                    break;
+                case 'hollow':
+                    // Implement Hollow Candles
+                    break;
+                default:
+                    // Default candlestick
+                    break;
+            }
+        }
+
+        // Toggle indicator
+        function toggleIndicator(indicator) {
+            console.log(`📈 Toggling ${indicator} indicator`);
+            
+            const button = event.target;
+            
+            if (activeIndicators.has(indicator)) {
+                // Remove indicator
+                activeIndicators.delete(indicator);
+                button.classList.remove('active');
+                removeIndicator(indicator);
+            } else {
+                // Add indicator
+                activeIndicators.add(indicator);
+                button.classList.add('active');
+                addIndicator(indicator);
+            }
+        }
+
+        // Add indicator to chart
+        function addIndicator(indicator) {
+            switch (indicator) {
+                case 'RSI':
+                    addRSIIndicator();
+                    break;
+                case 'MACD':
+                    addMACDIndicator();
+                    break;
+                case 'BB':
+                    addBollingerBandsIndicator();
+                    break;
+                case 'MA':
+                    addMovingAverageIndicator();
+                    break;
+                case 'Volume':
+                    // Volume is already shown
+                    break;
+            }
+        }
+
+        // Remove indicator from chart
+        function removeIndicator(indicator) {
+            if (indicators[indicator]) {
+                chart.removeSeries(indicators[indicator]);
+                delete indicators[indicator];
+            }
+        }
+
+        // RSI Indicator
+        function addRSIIndicator() {
+            // Implement RSI calculation and display
+            console.log('📊 Adding RSI indicator');
+        }
+
+        // MACD Indicator
+        function addMACDIndicator() {
+            // Implement MACD calculation and display
+            console.log('📊 Adding MACD indicator');
+        }
+
+        // Bollinger Bands Indicator
+        function addBollingerBandsIndicator() {
+            // Implement Bollinger Bands calculation and display
+            console.log('📊 Adding Bollinger Bands indicator');
+        }
+
+        // Moving Average Indicator
+        function addMovingAverageIndicator() {
+            // Implement Moving Average calculation and display
+            console.log('📊 Adding Moving Average indicator');
+        }
+
+        // Toggle drawing tools
+        function toggleDrawingTools() {
+            console.log('✏️ Toggling drawing tools');
+            // Implement drawing tools functionality
+        }
+
+        // Toggle volume profile
+        function toggleVolumeProfile() {
+            console.log('📶 Toggling volume profile');
+            // Implement volume profile functionality
+        }
+
+        // Utility functions
+        function formatVolume(volume) {
+            if (volume >= 1e9) {
+                return (volume / 1e9).toFixed(2) + 'B';
+            } else if (volume >= 1e6) {
+                return (volume / 1e6).toFixed(2) + 'M';
+            } else if (volume >= 1e3) {
+                return (volume / 1e3).toFixed(2) + 'K';
+            }
+            return volume.toString();
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = loading ? 'flex' : 'none';
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+            
+            if (connected) {
+                dot.classList.remove('disconnected');
+                text.textContent = `Connected to ${exchanges.length} exchanges`;
+            } else {
+                dot.classList.add('disconnected');
+                text.textContent = 'Disconnected - Attempting to reconnect...';
+            }
+        }
+
+        function selectExchange(exchangeId) {
+            console.log(`🔗 Selected exchange: ${exchangeId}`);
+            // Implement exchange-specific functionality
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('📱 Page hidden - reducing updates');
+            } else {
+                console.log('📱 Page visible - resuming updates');
+                // Reconnect if needed
+                if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                    connectWebSocket();
+                }
+            }
+        });
+
+        console.log('🚀 PulseIntel SuperChart script loaded');
+    </script>
+</body>
+</html>

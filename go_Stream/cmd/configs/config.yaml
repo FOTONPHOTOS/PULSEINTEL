@@ -1,0 +1,63 @@
+redis:
+  address: "localhost:6379"
+  password: ""
+  db: 0
+  pool_size: 100
+
+exchanges:
+  - name: "binance"
+    enabled: true
+    websocket_url: "wss://fstream.binance.com/ws"
+    symbols:
+      - "BTCUSDT"
+      - "ETHUSDT"
+      - "BNBUSDT"
+      - "SOLUSDT"
+      - "XRPUSDT"
+      - "DOGEUSDT"
+      - "ADAUSDT"
+      - "AVAXUSDT"
+      - "DOTUSDT"
+      - "LINKUSDT"
+  - name: "bybit"
+    enabled: true
+    websocket_url: "wss://stream.bybit.com/v5/public/spot"
+    symbols:
+      - "BTCUSDT"
+      - "ETHUSDT"
+      - "BNBUSDT"
+      - "SOLUSDT"
+      - "XRPUSDT"
+      - "DOGEUSDT"
+      - "ADAUSDT"
+      - "AVAXUSDT"
+      - "HYPEUSDT"
+      - "FARTCOINUSDT"
+  - name: "okx"
+    enabled: true
+    websocket_url: "wss://ws.okx.com:8443/ws/v5/public"
+    symbols:
+      - "BTC-USDT"
+      - "ETH-USDT"
+      - "BNB-USDT"
+      - "SOL-USDT"
+      - "XRP-USDT"
+      - "DOGE-USDT"
+      - "ADA-USDT"
+      - "AVAX-USDT"
+      - "HYPE-USDT"
+      - "FARTCOIN-USDT"
+  - name: "hyperliquid"
+    enabled: true
+    websocket_url: "wss://api.hyperliquid.xyz/ws"
+    symbols:
+      - "BTC"
+      - "ETH"
+      - "BNB"
+      - "SOL"
+      - "XRP"
+      - "DOGE"
+      - "ADA"
+      - "AVAX"
+      - "HYPE"
+      - "FARTCOIN"

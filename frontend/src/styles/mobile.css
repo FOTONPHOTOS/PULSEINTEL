@@ -1,0 +1,126 @@
+/* Mobile-specific styles for PulseIntel Dashboard */
+
+/* Global font and text adjustments */
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Ensure text stays within containers */
+.text-container {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Font size adjustments for better mobile readability */
+@media (max-width: 768px) {
+  /* Override any fixed widths in components */
+  .recharts-wrapper {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  
+  /* Make tables horizontally scrollable */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Adjust chart heights for mobile */
+  .chart-container {
+    height: 250px !important;
+  }
+  
+  /* Responsive text sizing */
+  .text-3xl { font-size: 1.5rem !important; }
+  .text-2xl { font-size: 1.25rem !important; }
+  .text-xl { font-size: 1.125rem !important; }
+  .text-lg { font-size: 1rem !important; }
+  .text-base { font-size: 0.875rem !important; }
+  .text-sm { font-size: 0.75rem !important; }
+  .text-xs { font-size: 0.625rem !important; }
+  
+  /* Ensure cards maintain proper spacing */
+  .card-content {
+    padding: 0.75rem !important;
+  }
+  
+  /* Adjust padding for mobile */
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  
+  .mobile-p-4 {
+    padding: 1rem;
+  }
+  
+  /* Hide non-essential elements on mobile */
+  .mobile-hidden {
+    display: none;
+  }
+  
+  /* Stack elements vertically on mobile */
+  .mobile-stack {
+    flex-direction: column;
+  }
+  
+  /* Reduce margins on mobile */
+  .mobile-space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
+  
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Ensure metric cards are properly sized */
+  .metric-card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  /* Responsive grid adjustments */
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+/* Smooth transitions for mobile menu */
+.mobile-menu-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Ensure touch targets are large enough */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improve scrolling on mobile */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+
+/* Price animation */
+.price-change-positive {
+  animation: priceUp 0.5s ease-in-out;
+}
+
+.price-change-negative {
+  animation: priceDown 0.5s ease-in-out;
+}
+
+@keyframes priceUp {
+  0% { background-color: rgba(34, 197, 94, 0.2); }
+  100% { background-color: transparent; }
+}
+
+@keyframes priceDown {
+  0% { background-color: rgba(239, 68, 68, 0.2); }
+  100% { background-color: transparent; }
+}

@@ -1,0 +1,78 @@
+# Archive folder - development files not needed for deployment
+archive/
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/build/
+go_Stream/*.exe
+go_Stream/pulseintel_engine
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Database files
+*.db
+*.db-journal
+
+# Log files
+*.log
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environment
+venv/
+env/
+myenv/
+myenv_fixed/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Test files
+test_*.html
+test_*.py
+debug_*.py
+
+# Development scripts
+launch_*.ps1
+debug_*.ps1
+fix_*.ps1
+restart_*.ps1
+diagnose_*.ps1
+test_*.ps1
+
+# Documentation drafts
+*_DRAFT.md
+*_TEMP.md
+*_OLD.md
+
+# Backup files
+*.bak
+*.backup
+*_backup.*

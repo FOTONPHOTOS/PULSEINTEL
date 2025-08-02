@@ -1,0 +1,13 @@
+@echo off
+echo Starting P9-MicroStream Production...
+
+echo Building application...
+go build -o bin/p9_microstream.exe cmd/main.go
+
+echo Starting Redis...
+docker run -d --name p9-redis -p 6379:6379 redis:alpine
+
+echo Starting P9-MicroStream...
+bin/p9_microstream.exe
+
+echo P9-MicroStream production started!
