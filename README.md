@@ -36,21 +36,33 @@
 
 PulseIntel follows a modern microservices architecture:
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Go Stream     │───▶│  WebSocket       │───▶│   React         │
-│   (Data Feed)   │    │  Service         │    │   Frontend      │
-│   Port: 8899    │    │  Port: 8000      │    │   Port: 5174    │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │   REST API       │
-                       │   Service        │
-                       │   Port: 8080     │
-                       └──────────────────┘
-```
+┌──────────────────┐                 ┌─────────────────────┐
+│    Go Stream     │─(gzip data)───▶ │   Python WebSocket  │
+│ (BTC/ETH/SOL     │                 │   Service           │
+│  Feed from       │                 │   (Normalization)   │
+│  Binance/Bybit/  │                 │   Port: 8000        │
+│  Okx, Port: 8899)│                 └─────────┬───────────┘
+└──────────────────┘                           │
+                                               │
+                                               ▼
+                                       ┌───────────────┐
+                                       │   Frontend    │
+                                       │   (React,     │
+                                       │   Port: 5174) │
+                                       └───────────────┘
 
+┌─────────────────────┐
+│  Python REST API    │
+│  Service            │
+│  (RSS, OI, Funding  │
+│  Rate, etc.)        │
+│  Port: 8080         │
+└─────────┬───────────┘
+          │
+          ▼
+   ┌───────────────┐
+   │   Frontend    │
+   └───────────────┘
 ### **Components:**
 
 1. **Go Stream Engine** (`go_Stream/`): High-performance data ingestion from multiple exchanges
