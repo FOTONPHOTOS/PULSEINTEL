@@ -1,4 +1,4 @@
-# 🚀 PulseIntel - Real-Time Crypto Market Intelligence Platform
+# PulseIntel - Real-Time Crypto Market Intelligence Platform
 # Dashboard Preview
 
 ![Dashboard Screenshot](frontend/src/assets/dashboard.png)
