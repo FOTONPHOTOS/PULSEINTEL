@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5174, // PulseIntel Frontend - avoid conflict with Precision9 (5173)
     host: '0.0.0.0',
+    allowedHosts: ['app.precision9bot.com'],
     proxy: {
       '/api': {
         target: 'http://localhost:8888',

@@ -1,5 +1,5 @@
 # P9_MicroStream Configuration
-# Institutional-Grade Market Data Infrastructure - FOCUSED ON SOL ONLY
+# Institutional-Grade Market Data Infrastructure - Now with BTC, ETH, and SOL support
 
 server:
   port: 8080
@@ -65,12 +65,12 @@ service_groups:
       - delta_tape_analyzer
       - regime_classifier
 
-# Exchange Configuration - FOCUSED ON SOL ONLY
+# Exchange Configuration - Now with BTC, ETH, and SOL support
 exchanges:
   - name: "binance"
     enabled: true
     websocket_url: "wss://stream.binance.com:9443/ws/"
-    symbols: ["solusdt"]  # SOL ONLY
+    symbols: ["btcusdt", "ethusdt", "solusdt"]
     services:
       orderbook: true
       trade: true
@@ -100,7 +100,7 @@ exchanges:
 
   - name: "bybit"
     enabled: true
-    symbols: ["solusdt"]  # SOL ONLY
+    symbols: ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
     websocket_url: "wss://stream.bybit.com/v5/public/linear"
     services:
       orderbook: true
@@ -132,7 +132,7 @@ exchanges:
   - name: "okx"
     enabled: true
     websocket_url: "wss://ws.okx.com:8443/ws/v5/public"
-    symbols: ["sol-usdt"]  # SOL ONLY (OKX format)
+    symbols: ["BTC-USDT", "ETH-USDT", "SOL-USDT"]
     services:
       orderbook: true
       trade: true
@@ -160,29 +160,73 @@ exchanges:
     reconnect_backoff: "5s"
     max_reconnect_attempts: 12
 
-# Symbol Configuration - SOL ONLY
+# Symbol Configuration - Now with BTC, ETH, and SOL support
 symbols:
+  btcusdt:
+    enabled: true
+    whale_threshold: 1000000
+    book_levels: 1000
+    cvd_window: "30s"
+    volatility_windows: ["30s", "1m", "5m"]
+    candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
+    order_flow_analysis: true
+    orderbook_depth_analysis: true
+    wall_detection_threshold: 50.0
+
+  ethusdt:
+    enabled: true
+    whale_threshold: 500000
+    book_levels: 1000
+    cvd_window: "30s"
+    volatility_windows: ["30s", "1m", "5m"]
+    candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
+    order_flow_analysis: true
+    orderbook_depth_analysis: true
+    wall_detection_threshold: 500.0
+
   solusdt:
     enabled: true
-    whale_threshold: 200  # $200 threshold for SOL
-    book_levels: 1000  # DEEP ORDER BOOK - 1000 levels for institutional analysis
+    whale_threshold: 200000
+    book_levels: 1000
     cvd_window: "30s"
     volatility_windows: ["30s", "1m", "5m"]
     candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
     order_flow_analysis: true
     orderbook_depth_analysis: true
-    wall_detection_threshold: 1000.0  # SOL volume threshold for wall detection
+    wall_detection_threshold: 1000.0
 
-  sol-usdt:  # OKX format
+  BTC-USDT:  # OKX format
     enabled: true
-    whale_threshold: 200  # $200 threshold for SOL on OKX
-    book_levels: 1000  # DEEP ORDER BOOK - 1000 levels for institutional analysis
+    whale_threshold: 1000000
+    book_levels: 1000
     cvd_window: "30s"
     volatility_windows: ["30s", "1m", "5m"]
     candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
     order_flow_analysis: true
     orderbook_depth_analysis: true
-    wall_detection_threshold: 1000.0  # SOL volume threshold for wall detection
+    wall_detection_threshold: 50.0
+
+  ETH-USDT:  # OKX format
+    enabled: true
+    whale_threshold: 500000
+    book_levels: 1000
+    cvd_window: "30s"
+    volatility_windows: ["30s", "1m", "5m"]
+    candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
+    order_flow_analysis: true
+    orderbook_depth_analysis: true
+    wall_detection_threshold: 500.0
+
+  SOL-USDT:  # OKX format
+    enabled: true
+    whale_threshold: 200000
+    book_levels: 1000
+    cvd_window: "30s"
+    volatility_windows: ["30s", "1m", "5m"]
+    candle_timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
+    order_flow_analysis: true
+    orderbook_depth_analysis: true
+    wall_detection_threshold: 1000.0
 
 # Analytics Configuration
 analytics:
@@ -193,46 +237,50 @@ analytics:
   whale_tracker:
     enabled: true
     thresholds:
-      solusdt: 200.0    # SOL threshold
-      sol-usdt: 200.0   # OKX format
+      btcusdt: 1000000.0
+      ethusdt: 500000.0
+      solusdt: 200000.0
+      BTC-USDT: 1000000.0
+      ETH-USDT: 500000.0
+      SOL-USDT: 200000.0
       
   momentum_detector:
     enabled: true
-    price_change_threshold: 0.2  # Much lower threshold - 0.2% (was 0.5%)
-    volume_threshold: 1.2        # Lower volume requirement (was 1.5)
-    time_window: 15              # Shorter window for faster detection (was 30)
+    price_change_threshold: 0.2
+    volume_threshold: 1.2
+    time_window: 15
     
   volatility_monitor:
     enabled: true
     timeframes: ["1m", "5m", "15m"]
-    spike_threshold: 1.2         # Much lower threshold (was 2.0)
+    spike_threshold: 1.2
     
   spoofing_detector:
     enabled: true
-    min_order_size: 50.0         # Lower minimum order size (was 100.0)
-    cancellation_threshold: 0.6  # Lower threshold - more sensitive (was 0.8)
-    phantom_liquidity_threshold: 0.5  # Lower threshold - more sensitive (was 0.7)
+    min_order_size: 50.0
+    cancellation_threshold: 0.6
+    phantom_liquidity_threshold: 0.5
 
   # FUNDING RATE AGGREGATOR - NEW IMPLEMENTATION
   funding_rate_aggregator:
     enabled: true
-    poll_interval: "30s"  # REST polling interval for funding rates
+    poll_interval: "30s"
 
   # MARK PRICE POLLER - NEW IMPLEMENTATION
   mark_price_poller:
     enabled: true
-    poll_interval: "10s"  # REST polling interval for mark prices (faster than funding rates)
+    poll_interval: "10s"
 
   # OPEN INTEREST POLLER - NEW IMPLEMENTATION
   open_interest_poller:
     enabled: true
-    poll_interval: "15s"  # REST polling interval for open interest data
+    poll_interval: "15s"
 
   # DEPTH GAP WATCHER - DATA INTEGRITY MONITORING
   depth_gap_watcher:
     enabled: true
-    max_gap_size: 10      # Trigger snapshot request if gap > 10
-    gap_timeout: "30s"    # Trigger if no updates for 30s
+    max_gap_size: 10
+    gap_timeout: "30s"
 
   # BOOK TICKER AGGREGATOR - ITEM 13: ORDER-BOOK IMBALANCE/LADDER EVENTS
   book_ticker_aggregator:
@@ -243,18 +291,18 @@ analytics:
   # PERIODIC SNAPSHOTS - ITEM 3: REGULAR BOOK SNAPSHOTS  
   periodic_snapshots:
     enabled: true
-    interval: "1s"        # Snapshot every 1 second for lossless recovery
-    storage_duration: "24h" # Keep snapshots for 24 hours
+    interval: "1s"
+    storage_duration: "24h"
 
   # INSURANCE FUND MONITOR - ITEM 12: INSURANCE FUND BALANCE
   insurance_fund_monitor:
     enabled: true
-    poll_interval: "5m"   # Poll every 5 minutes
-    exchanges: ["binance", "bybit"]  # OKX doesn't expose insurance fund
+    poll_interval: "5m"
+    exchanges: ["binance", "bybit"]
     stress_thresholds:
-      critical: -10.0     # >10% decrease
-      high: -5.0         # 5-10% decrease  
-      medium: -1.0       # 1-5% decrease
+      critical: -10.0
+      high: -5.0
+      medium: -1.0
 
   # REDIS PUBLISH CONFIRMER - ITEM 26: REDIS PUBLISH-CONFIRM/RETRY
   redis_publish_confirmer:
@@ -269,7 +317,7 @@ analytics:
     enabled: true
     timeframes: ["1s", "5s", "15s", "30s", "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d"]
     publish_channels:
-      format: "candles:{SYMBOL}:{TIMEFRAME}"  # e.g., candles:SOLUSDT:1m
+      format: "candles:{SYMBOL}:{TIMEFRAME}"
     vwap_calculation: true
     taker_volume_tracking: true
     
@@ -277,10 +325,14 @@ analytics:
   order_flow_analyzer:
     enabled: true
     whale_thresholds:
-      solusdt: 200.0   # $200 for SOL trades
-      sol-usdt: 200.0  # $200 for SOL on OKX
+      btcusdt: 1000000.0
+      ethusdt: 500000.0
+      solusdt: 200000.0
+      BTC-USDT: 1000000.0
+      ETH-USDT: 500000.0
+      SOL-USDT: 200000.0
     publish_channels:
-      format: "orderflow:{SYMBOL}"  # e.g., orderflow:SOLUSDT
+      format: "orderflow:{SYMBOL}"
     price_impact_analysis: true
     flow_type_classification: true
     micro_trend_detection: true
@@ -290,11 +342,15 @@ analytics:
   orderbook_analyzer:
     enabled: true
     wall_detection_thresholds:
-      solusdt: 1000.0   # 1000 SOL minimum for wall
-      sol-usdt: 1000.0  # 1000 SOL minimum for wall on OKX
+      btcusdt: 50.0
+      ethusdt: 500.0
+      solusdt: 1000.0
+      BTC-USDT: 50.0
+      ETH-USDT: 500.0
+      SOL-USDT: 1000.0
     publish_channels:
-      format: "orderbook:{SYMBOL}"  # e.g., orderbook:SOLUSDT
-    depth_analysis_levels: [5, 10, 20, 50]  # Analyze liquidity at these depths
+      format: "orderbook:{SYMBOL}"
+    depth_analysis_levels: [5, 10, 20, 50]
     wall_significance_levels: ["MINOR", "MODERATE", "MAJOR", "MASSIVE"]
     imbalance_tracking: true
     liquidity_profiling: true
@@ -326,25 +382,25 @@ advanced_analytics:
   velocity_analyzer:
     enabled: true
     timeframes: ["10s", "30s", "1m", "2m", "5m"]
-    velocity_threshold: 0.1      # Lower threshold for velocity detection
+    velocity_threshold: 0.1
     
   liquidity_vacuum_analyzer:
     enabled: true
-    vacuum_threshold: 0.2        # Lower threshold (was 0.3)
+    vacuum_threshold: 0.2
     
   vpin_analyzer:
     enabled: true
-    bucket_size: 50              # Smaller buckets for faster detection (was 100)
+    bucket_size: 50
     num_buckets: 50
-    toxicity_threshold: 0.6      # Lower threshold for toxicity alerts
+    toxicity_threshold: 0.6
     
   delta_tape_analyzer:
     enabled: true
-    flow_threshold: 500.0        # Lower threshold (was 1000.0)
+    flow_threshold: 500.0
     
   regime_classifier:
     enabled: true
-    volatility_threshold: 10.0   # Lower threshold (was 15.0)
+    volatility_threshold: 10.0
 
 # MONITORING
 monitoring:
@@ -359,13 +415,13 @@ performance:
   flush_interval: "1s"
   max_memory_mb: 512
 
-# Worker Configuration - Optimized for SOL only
+# Worker Configuration - Now supports multiple assets
 workers:
-  websocket_workers: 3  # One per exchange (Binance, Bybit, OKX)
-  analytics_workers: 12  # All analytics services
-  detection_workers: 9   # All detection services
-  auxiliary_workers: 6   # Auxiliary services
-  total_workers: 30
+  websocket_workers: 9  # 3 exchanges * 3 symbols
+  analytics_workers: 12
+  detection_workers: 9
+  auxiliary_workers: 6
+  total_workers: 36
 
 # Security Configuration
 security:
@@ -379,15 +435,16 @@ security:
     allowed_origins: ["*"]
     allowed_methods: ["GET", "POST"]
 
-# Deep Order Book Configuration - INSTITUTIONAL GRADE - SOL OPTIMIZED
+# Deep Order Book Configuration - INSTITUTIONAL GRADE
 deep_orderbook:
   enabled: true
-  max_levels: 1000  # Maximum levels per side
-  update_frequency: "100ms"  # Balance between speed and data quality
+  max_levels: 1000
+  update_frequency: "100ms"
   memory_optimization: true
   compression: true
   analytics:
     liquidity_profiling: true
     iceberg_detection: true
     spoofing_analysis: true
-    market_impact_calculation: true 
+    market_impact_calculation: true
+ 

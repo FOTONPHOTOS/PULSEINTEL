@@ -1,51 +1,98 @@
 import React, { useState, useEffect } from 'react';
-import { Newspaper, ExternalLink, Clock, TrendingUp, Filter, RefreshCw } from 'lucide-react';
-import { apiConfig } from '../apiConfig'; // Import the centralized config
+import { Newspaper, ExternalLink, Clock, TrendingUp, Filter, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { apiConfig } from '../apiConfig';
 
-// ... (interface and other functions remain the same)
+interface NewsItem {
+  id: string;
+  headline: string;
+  summary: string;
+  source: string;
+  publishedAt: string;
+  url: string;
+  sentiment: 'positive' | 'negative' | 'neutral';
+  impact: 'high' | 'medium' | 'low';
+  category: string;
+}
 
 const ProfessionalNewsTracker: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastFetch, setLastFetch] = useState(0);
   const [filter, setFilter] = useState<'all' | 'high' | 'breaking'>('all');
-  const [refreshing, setRefreshing] = useState(false);
+  const [wsStatus, setWsStatus] = useState<'connected' | 'disconnected'>('disconnected');
 
-  useEffect(() => {
-    fetchNews();
-    const interval = setInterval(fetchNews, 30000); // Refresh every 30 seconds for real-time updates
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchNews = async () => {
-    try {
-      setRefreshing(true);
-      const response = await fetch(`${apiConfig.REST_API_SERVICE}/api/news?limit=20`);
-      if (!response.ok) throw new Error('Failed to fetch news');
-      
-      const data = await response.json();
-      
-      // Transform and enhance news data for institutional display
-      const enhancedNews = data.articles?.map((item: any, index: number) => ({
-        id: item.id || `news-${index}`,
-        headline: item.title || item.headline || '',
-        summary: item.description?.substring(0, 120) + '...' || '',
-        source: item.source || 'Unknown',
-        publishedAt: item.published_at || item.datetime || new Date().toISOString(),
-        url: item.url || '#',
-        sentiment: determineSentiment(item.title || ''),
-        impact: determineImpact(item.title || ''),
-        category: determineCategory(item.title || '')
-      })) || [];
-
-      setNews(enhancedNews);
-    } catch (error) {
-      console.error('Failed to fetch news:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+  // Enhanced data processing and state update logic
+  const processAndSetNews = (articles: any[]) => {
+    const enhancedNews = articles.map((item: any) => ({
+      id: item.id || item.url || `news-${Math.random()}`,
+      headline: item.title || item.headline || '',
+      summary: item.description?.substring(0, 120) + '...' || '',
+      source: item.source || 'Unknown',
+      publishedAt: item.published_at || new Date().toISOString(),
+      url: item.url || '#',
+      sentiment: determineSentiment(item.title || ''),
+      impact: determineImpact(item.title || ''),
+      category: determineCategory(item.title || '')
+    }));
+    setNews(enhancedNews);
+    setLoading(false);
   };
+  
+  // WebSocket connection logic
+  useEffect(() => {
+    // Fetch initial data via REST to populate the feed quickly
+    const fetchInitialNews = async () => {
+      try {
+        const response = await fetch(`${apiConfig.REST_API_SERVICE}/api/news`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.articles) {
+            processAndSetNews(data.articles);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial news:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchInitialNews();
+
+    // Establish WebSocket connection
+    const wsUrl = `${apiConfig.WEBSOCKET_SERVICE.replace(/^http/, 'ws')}/ws/news`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('📰 News WebSocket connected');
+      setWsStatus('connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'news_update' && message.data) {
+          console.log('📰 Received real-time news update');
+          processAndSetNews(message.data);
+        }
+      } catch (error) {
+        console.error('Error processing news message:', error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('📰 News WebSocket disconnected');
+      setWsStatus('disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('News WebSocket error:', error);
+      setWsStatus('disconnected');
+    };
+
+    // Cleanup on unmount
+    return () => {
+      ws.close();
+    };
+  }, []);
 
 
   const determineSentiment = (headline: string): 'positive' | 'negative' | 'neutral' => {
@@ -160,15 +207,6 @@ const ProfessionalNewsTracker: React.FC = () => {
             <option value="high">High Impact</option>
             <option value="breaking">Breaking</option>
           </select>
-
-          {/* Refresh Button */}
-          <button
-            onClick={fetchNews}
-            disabled={refreshing}
-            className="p-2 bg-slate-800/80 rounded-lg border border-slate-600/50 hover:bg-slate-700/80 transition-colors"
-          >
-            <RefreshCw className={`h-4 w-4 text-slate-300 ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
         </div>
       </div>
 
@@ -234,11 +272,10 @@ const ProfessionalNewsTracker: React.FC = () => {
         <div className="flex items-center justify-between text-xs text-slate-400">
           <span>{filteredNews.length} articles displayed</span>
           <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span>Live Feed</span>
+            <span className={`flex items-center space-x-1 ${wsStatus === 'connected' ? 'text-green-400' : 'text-red-400'}`}>
+              {wsStatus === 'connected' ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+              <span>{wsStatus === 'connected' ? 'Live Feed' : 'Disconnected'}</span>
             </span>
-            <span>Updated every 30 seconds</span>
           </div>
         </div>
       </div>

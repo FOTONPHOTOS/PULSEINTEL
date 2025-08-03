@@ -1,91 +1,202 @@
-/* Mobile-specific styles for PulseIntel Dashboard */
+/* 📱 MOBILE-FIRST RESPONSIVE DESIGN FOR PULSEINTEL */
 
-/* Global font and text adjustments */
+/* ===== GLOBAL MOBILE OPTIMIZATIONS ===== */
 * {
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
 }
 
-/* Ensure text stays within containers */
-.text-container {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
 }
 
-/* Font size adjustments for better mobile readability */
+/* ===== MOBILE BREAKPOINTS ===== */
 @media (max-width: 768px) {
-  /* Override any fixed widths in components */
+  
+  /* ===== LAYOUT FIXES ===== */
+  
+  /* Force full width usage */
+  .container, .main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Fix sidebar width issue */
+  .mobile-sidebar {
+    width: 280px !important; /* Reduced from 320px */
+    max-width: 85vw !important; /* Never exceed 85% of viewport */
+  }
+  
+  /* ===== GRID & FLEX FIXES ===== */
+  
+  /* Force single column on mobile */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Stack flex items vertically */
+  .flex-responsive {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* ===== COMPONENT SPECIFIC FIXES ===== */
+  
+  /* Charts and graphs */
   .recharts-wrapper {
     width: 100% !important;
     min-width: 0 !important;
+    height: 200px !important; /* Reduced height for mobile */
   }
   
-  /* Make tables horizontally scrollable */
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Adjust chart heights for mobile */
   .chart-container {
-    height: 250px !important;
+    height: 200px !important;
+    width: 100% !important;
+    overflow: hidden !important;
   }
   
-  /* Responsive text sizing */
-  .text-3xl { font-size: 1.5rem !important; }
-  .text-2xl { font-size: 1.25rem !important; }
-  .text-xl { font-size: 1.125rem !important; }
-  .text-lg { font-size: 1rem !important; }
-  .text-base { font-size: 0.875rem !important; }
-  .text-sm { font-size: 0.75rem !important; }
-  .text-xs { font-size: 0.625rem !important; }
+  /* Tables - horizontal scroll */
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
   
-  /* Ensure cards maintain proper spacing */
-  .card-content {
+  table {
+    min-width: 600px !important; /* Ensure table doesn't compress too much */
+  }
+  
+  /* Cards and panels */
+  .card, .panel {
+    margin: 0.5rem 0 !important;
     padding: 0.75rem !important;
+    border-radius: 0.5rem !important;
   }
   
-  /* Adjust padding for mobile */
-  .mobile-p-2 {
-    padding: 0.5rem;
+  /* ===== TEXT & TYPOGRAPHY ===== */
+  
+  /* Responsive font scaling */
+  .text-4xl { font-size: 1.75rem !important; line-height: 1.2 !important; }
+  .text-3xl { font-size: 1.5rem !important; line-height: 1.3 !important; }
+  .text-2xl { font-size: 1.25rem !important; line-height: 1.4 !important; }
+  .text-xl { font-size: 1.125rem !important; line-height: 1.4 !important; }
+  .text-lg { font-size: 1rem !important; line-height: 1.5 !important; }
+  .text-base { font-size: 0.875rem !important; line-height: 1.5 !important; }
+  .text-sm { font-size: 0.75rem !important; line-height: 1.5 !important; }
+  .text-xs { font-size: 0.625rem !important; line-height: 1.4 !important; }
+  
+  /* Prevent text overflow */
+  .text-container {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
-  .mobile-p-4 {
-    padding: 1rem;
-  }
+  /* ===== METRIC CARDS & DATA DISPLAY ===== */
   
-  /* Hide non-essential elements on mobile */
-  .mobile-hidden {
-    display: none;
-  }
-  
-  /* Stack elements vertically on mobile */
-  .mobile-stack {
-    flex-direction: column;
-  }
-  
-  /* Reduce margins on mobile */
-  .mobile-space-y-2 > * + * {
-    margin-top: 0.5rem;
-  }
-  
-  .mobile-space-y-4 > * + * {
-    margin-top: 1rem;
-  }
-  
-  /* Ensure metric cards are properly sized */
   .metric-card {
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    min-height: 100px !important;
+    padding: 0.75rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
   
-  /* Responsive grid adjustments */
-  .grid-responsive {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  .metric-value {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem !important;
+    opacity: 0.8 !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* ===== NAVIGATION & BUTTONS ===== */
+  
+  /* Touch-friendly button sizes */
+  .btn, button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Mobile menu improvements */
+  .mobile-menu-item {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* ===== UTILITY CLASSES ===== */
+  
+  .mobile-hidden { display: none !important; }
+  .mobile-only { display: block !important; }
+  .mobile-stack { flex-direction: column !important; }
+  .mobile-center { text-align: center !important; }
+  .mobile-full-width { width: 100% !important; }
+  
+  /* Spacing utilities */
+  .mobile-p-2 { padding: 0.5rem !important; }
+  .mobile-p-4 { padding: 1rem !important; }
+  .mobile-m-2 { margin: 0.5rem !important; }
+  .mobile-m-4 { margin: 1rem !important; }
+  
+  .mobile-space-y-2 > * + * { margin-top: 0.5rem !important; }
+  .mobile-space-y-4 > * + * { margin-top: 1rem !important; }
+  
+  /* ===== PERFORMANCE OPTIMIZATIONS ===== */
+  
+  /* Smooth scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-x: auto !important;
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Hardware acceleration for animations */
+  .mobile-animate {
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+}
+
+/* ===== EXTRA SMALL SCREENS (< 480px) ===== */
+@media (max-width: 480px) {
+  
+  /* Even more aggressive space saving */
+  .container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .card, .panel {
+    padding: 0.5rem !important;
+    margin: 0.25rem 0 !important;
+  }
+  
+  /* Smaller text on very small screens */
+  .text-3xl { font-size: 1.25rem !important; }
+  .text-2xl { font-size: 1.125rem !important; }
+  .text-xl { font-size: 1rem !important; }
+  
+  /* Reduce chart heights further */
+  .chart-container {
+    height: 150px !important;
+  }
+  
+  .recharts-wrapper {
+    height: 150px !important;
   }
 }
 

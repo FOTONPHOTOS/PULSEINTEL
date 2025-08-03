@@ -1,8 +1,8 @@
 // API utilities for PulseIntel Dashboard
 // Split Architecture: REST API (8001) + WebSocket (8000)
 
-const API_BASE_URL = 'http://localhost:8001/api';  // REST API Service
-const WS_BASE_URL = 'ws://localhost:8000/ws';      // WebSocket Service
+export const API_BASE_URL = 'https://api.precision9bot.com/api';  // REST API Service via Cloudflare
+export const WS_BASE_URL = 'wss://ws.precision9bot.com/ws';      // WebSocket Service via Cloudflare
 
 export interface OrderbookData {
   symbol: string;

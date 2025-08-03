@@ -119,7 +119,7 @@ func (b *BybitConnector) subscribe() error {
 	if err := b.subscribeToStream(fmt.Sprintf("publicTrade.%s", bybitSymbol)); err != nil {
 		return err
 	}
-	if err := b.subscribeToStream(fmt.Sprintf("orderbook.200.%s", bybitSymbol)); err != nil {
+	if err := b.subscribeToStream(fmt.Sprintf("orderbook.500.%s", bybitSymbol)); err != nil {
 		return err
 	}
 	if err := b.subscribeToStream(fmt.Sprintf("kline.1.%s", bybitSymbol)); err != nil {

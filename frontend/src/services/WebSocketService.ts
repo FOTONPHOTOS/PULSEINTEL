@@ -4,7 +4,7 @@
  */
 
 export interface WebSocketData {
-  type: 'trade' | 'depth' | 'vwap' | 'cvd';
+  type: 'trade' | 'depth' | 'vwap' | 'cvd' | 'candle' | 'liquidations';
   symbol: string;
   timestamp: number;
   [key: string]: any;
@@ -16,7 +16,7 @@ class WebSocketService {
   private ws: WebSocket | null = null;
   private subscribers: Map<string, Set<WebSocketCallback>> = new Map();
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 10; // Increased for more resilience
   private reconnectDelay = 1000;
   private isConnecting = false;
 
@@ -30,16 +30,22 @@ class WebSocketService {
     }
 
     this.isConnecting = true;
-    console.log('🔌 WebSocketService: Connecting to ws://localhost:8000');
+    
+    // Use environment variable or fallback to localhost
+    const wsUrl = (process.env.REACT_APP_WEBSOCKET_URL || 
+                   (import.meta.env as any)?.VITE_WEBSOCKET_URL || 
+                   'ws://localhost:8000')
+      .replace('https://', 'wss://')
+      .replace('http://', 'ws://');
+    
+    console.log('🔌 WebSocketService: Connecting to', wsUrl);
 
-    this.ws = new WebSocket('ws://localhost:8000');
+    this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
       console.log('✅ WebSocketService: Connected successfully');
       this.isConnecting = false;
       this.reconnectAttempts = 0;
-
-      // Resubscribe to all channels
       this.resubscribeAll();
     };
 
@@ -47,15 +53,13 @@ class WebSocketService {
       try {
         const data = JSON.parse(event.data);
 
-        // Handle subscription confirmations
         if (data.status === 'success') {
           console.log(`✅ WebSocketService: ${data.message}`);
           return;
         }
 
-        // Route data to subscribers
         if (data.type && data.symbol) {
-          const channel = `${data.type}:${data.symbol}`;
+          const channel = `${data.type}:${data.symbol.toLowerCase()}`;
           const callbacks = this.subscribers.get(channel);
           
           if (callbacks && callbacks.size > 0) {
@@ -83,11 +87,12 @@ class WebSocketService {
       this.isConnecting = false;
       this.ws = null;
 
-      // Attempt to reconnect
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
         console.log(`🔄 WebSocketService: Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
         setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
+      } else {
+        console.error('❌ WebSocketService: Max reconnect attempts reached.');
       }
     };
   }
@@ -95,14 +100,9 @@ class WebSocketService {
   private resubscribeAll() {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
-    const channels = Array.from(this.subscribers.keys());
-    channels.forEach(channel => {
-      if (this.subscribers.get(channel)?.size! > 0) {
-        this.ws!.send(JSON.stringify({
-          action: "subscribe",
-          channel: channel
-        }));
-        console.log(`📡 WebSocketService: Resubscribed to ${channel}`);
+    this.subscribers.forEach((callbacks, channel) => {
+      if (callbacks.size > 0) {
+        this.subscribeToChannel(channel);
       }
     });
   }
@@ -114,36 +114,28 @@ class WebSocketService {
       this.subscribers.set(channel, new Set());
     }
     
-    this.subscribers.get(channel)!.add(callback);
-    console.log(`📈 WebSocketService: Added subscriber to ${channel} (total: ${this.subscribers.get(channel)!.size})`);
+    const channelSubscribers = this.subscribers.get(channel)!;
+    channelSubscribers.add(callback);
+    console.log(`📈 WebSocketService: Added subscriber to ${channel} (total: ${channelSubscribers.size})`);
 
-    // Subscribe to channel if this is the first subscriber
-    if (this.subscribers.get(channel)!.size === 1) {
+    if (channelSubscribers.size === 1) {
       this.subscribeToChannel(channel);
     }
 
-    // Return unsubscribe function
     return () => {
-      const channelSubscribers = this.subscribers.get(channel);
-      if (channelSubscribers) {
-        channelSubscribers.delete(callback);
-        console.log(`📉 WebSocketService: Removed subscriber from ${channel} (remaining: ${channelSubscribers.size})`);
-        
-        // Unsubscribe from channel if no more subscribers
-        if (channelSubscribers.size === 0) {
-          this.unsubscribeFromChannel(channel);
-          this.subscribers.delete(channel);
-        }
+      channelSubscribers.delete(callback);
+      console.log(`📉 WebSocketService: Removed subscriber from ${channel} (remaining: ${channelSubscribers.size})`);
+      
+      if (channelSubscribers.size === 0) {
+        this.unsubscribeFromChannel(channel);
+        this.subscribers.delete(channel);
       }
     };
   }
 
   private subscribeToChannel(channel: string) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        action: "subscribe",
-        channel: channel
-      }));
+      this.ws.send(JSON.stringify({ action: "subscribe", channel }));
       console.log(`📡 WebSocketService: Subscribed to ${channel}`);
     } else {
       console.log(`⏳ WebSocketService: Queued subscription to ${channel} (not connected)`);
@@ -152,33 +144,16 @@ class WebSocketService {
 
   private unsubscribeFromChannel(channel: string) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        action: "unsubscribe",
-        channel: channel
-      }));
+      this.ws.send(JSON.stringify({ action: "unsubscribe", channel }));
       console.log(`📡 WebSocketService: Unsubscribed from ${channel}`);
     }
   }
-
-  public getConnectionStatus(): 'connecting' | 'connected' | 'disconnected' {
-    if (this.isConnecting) return 'connecting';
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) return 'connected';
-    return 'disconnected';
-  }
-
-  public getSubscriberCount(): number {
-    let total = 0;
-    this.subscribers.forEach(callbacks => {
-      total += callbacks.size;
-    });
-    return total;
-  }
 }
 
-// Create singleton instance
 export const webSocketService = new WebSocketService();
 
-// Convenience functions for common subscriptions
+// --- Convenience Functions for Subscriptions ---
+
 export const subscribeToTrades = (symbol: string, callback: WebSocketCallback) => 
   webSocketService.subscribe('trade', symbol, callback);
 
@@ -190,3 +165,22 @@ export const subscribeToVWAP = (symbol: string, callback: WebSocketCallback) =>
 
 export const subscribeToCVD = (symbol: string, callback: WebSocketCallback) => 
   webSocketService.subscribe('cvd', symbol, callback);
+
+export const subscribeToCandles = (symbol: string, interval: string, callback: WebSocketCallback) => 
+  webSocketService.subscribe(`candle:${interval}`, symbol, callback);
+
+export const subscribeToLiquidations = (symbol: string, callback: WebSocketCallback) => 
+  webSocketService.subscribe('liquidations', symbol, callback);
+
+// --- Convenience Functions for Unsubscriptions (Optional but good practice) ---
+
+export const unsubscribeFromTrades = (symbol: string, callback: WebSocketCallback) => {
+  // The subscribe method returns the unsubscribe function. 
+  // This is a placeholder for a more explicit unsubscribe API if needed later.
+};
+
+export const unsubscribeFromDepth = (symbol: string, callback: WebSocketCallback) => {};
+export const unsubscribeFromVWAP = (symbol: string, callback: WebSocketCallback) => {};
+export const unsubscribeFromCVD = (symbol: string, callback: WebSocketCallback) => {};
+export const unsubscribeFromCandles = (symbol: string, interval: string, callback: WebSocketCallback) => {};
+export const unsubscribeFromLiquidations = (symbol: string, callback: WebSocketCallback) => {};

@@ -1,22 +1,24 @@
 import asyncio
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from collections import defaultdict
 import time
 import random
 import math
+import feedparser
+import re
+from typing import List, Dict, Any, Set
 
 # --- Configuration ---
 import os
 API_HOST = "0.0.0.0"
 API_PORT = int(os.getenv("PORT", 8001))
 
-# --- Caching ---
+# --- Caching & In-Memory Storage ---
 cache = {}
 CACHE_TTL = {
     "market_overview": 60 * 5,  # 5 minutes
-    "news": 30,                 # 30 seconds for real-time news
     "funding_rates": 60 * 1,    # 1 minute
     "open_interest": 60 * 1,    # 1 minute
     "orderbook": 3,             # 3 seconds
@@ -24,21 +26,148 @@ CACHE_TTL = {
     "microstructure": 30,       # 30 seconds
     "sentiment": 10,            # 10 seconds
 }
+# In-memory store for real-time news
+news_storage: List[Dict[str, Any]] = []
 
+
+# --- Real-time News Fetcher Class ---
+class RealNewsFetcher:
+    def __init__(self):
+        self.sources = {
+            "CoinDesk": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+            "CoinTelegraph": "https://cointelegraph.com/rss",
+            "Decrypt": "https://decrypt.co/feed",
+            "The Block": "https://www.theblockcrypto.com/rss.xml",
+            "CryptoSlate": "https://cryptoslate.com/feed/",
+            "Bitcoin Magazine": "https://bitcoinmagazine.com/.rss/full/",
+            "NewsBTC": "https://www.newsbtc.com/feed/",
+            "CryptoPotato": "https://cryptopotato.com/feed/"
+        }
+
+    async def fetch_rss_feed(self, session: httpx.AsyncClient, source_name: str, url: str) -> List[Dict]:
+        try:
+            async with session.stream("GET", url, timeout=10) as response:
+                if response.status_code == 200:
+                    content = await response.aread()
+                    feed = feedparser.parse(content)
+                    
+                    articles = []
+                    for entry in feed.entries[:5]:
+                        published_at = int(time.time() * 1000)
+                        if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                            published_at = int(time.mktime(entry.published_parsed) * 1000)
+                        
+                        description = ""
+                        if hasattr(entry, 'summary'):
+                            description = re.sub(r'<[^>]+>', '', entry.summary)[:200]
+
+                        article = {
+                            "id": entry.id if hasattr(entry, 'id') else entry.link,
+                            "title": entry.title,
+                            "description": description,
+                            "url": entry.link,
+                            "published_at": published_at,
+                            "source": source_name,
+                        }
+                        articles.append(article)
+                    return articles
+        except Exception as e:
+            print(f"Error fetching {source_name}: {e}")
+        return []
+
+    async def get_all_news(self, limit: int = 25) -> Dict[str, Any]:
+        async with httpx.AsyncClient() as session:
+            tasks = [self.fetch_rss_feed(session, name, url) for name, url in self.sources.items()]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            all_articles = []
+            working_sources = []
+            for i, result in enumerate(results):
+                source_name = list(self.sources.keys())[i]
+                if isinstance(result, list) and result:
+                    all_articles.extend(result)
+                    working_sources.append(source_name)
+            
+            all_articles.sort(key=lambda x: x['published_at'], reverse=True)
+            
+            return {
+                "articles": all_articles[:limit],
+                "total": len(all_articles),
+                "sources": working_sources,
+                "timestamp": int(time.time() * 1000),
+            }
+
+news_fetcher = RealNewsFetcher()
+
+
+# --- WebSocket Connection Manager ---
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Set[WebSocket] = set()
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.add(websocket)
+        print(f"📰 News client connected: {websocket.client}. Total clients: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+        print(f"📰 News client disconnected: {websocket.client}. Total clients: {len(self.active_connections)}")
+
+    async def broadcast(self, message: dict):
+        # Create a list of tasks for sending messages
+        tasks = [connection.send_json(message) for connection in self.active_connections]
+        # Execute all send tasks concurrently
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+manager = ConnectionManager()
+
+
+# --- FastAPI App ---
 app = FastAPI(
     title="PulseIntel API Service",
-    description="Provides RESTful endpoints for computed analytics, external data, and historical information.",
-    version="1.0.0"
+    description="Provides RESTful endpoints and real-time news WebSocket.",
+    version="1.1.0"
 )
 
 # --- Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Background Task ---
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(news_fetching_task())
+
+async def news_fetching_task():
+    global news_storage
+    print("🚀 Starting background news fetching task...")
+    while True:
+        try:
+            news_data = await news_fetcher.get_all_news()
+            if news_data and news_data["articles"]:
+                # Check for genuinely new articles to broadcast
+                if not news_storage or news_storage[0]['id'] != news_data['articles'][0]['id']:
+                    print(f"✅ Fetched {len(news_data['articles'])} new articles. Broadcasting...")
+                    news_storage = news_data["articles"]
+                    await manager.broadcast({
+                        "type": "news_update",
+                        "data": news_storage
+                    })
+                else:
+                    print("✅ No new articles found.")
+            else:
+                print("⚠️ No articles fetched in this cycle.")
+        except Exception as e:
+            print(f"❌ Error in news fetching task: {e}")
+        
+        await asyncio.sleep(60) # Fetch news every 60 seconds
+
 
 # --- Helper Functions ---
 def is_cache_valid(key: str) -> bool:
@@ -48,7 +177,7 @@ def is_cache_valid(key: str) -> bool:
         return False
     return True
 
-# --- Data Fetching Functions ---
+# (Other data fetching functions like get_coingecko_market_data remain the same)
 async def get_coingecko_market_data():
     url = "https://api.coingecko.com/api/v3/global"
     async with httpx.AsyncClient(timeout=httpx.Timeout(10.0)) as client:
@@ -84,6 +213,7 @@ async def get_open_interest_data(symbol: str):
         return results
 
 # --- API Endpoints ---
+# (Keep other endpoints like /api/market-overview, etc.)
 @app.get("/api/market-overview")
 async def market_overview():
     """Market overview with CoinGecko global data and Binance BTC data"""
@@ -608,146 +738,40 @@ async def market_microstructure(symbol: str, timeframe: str = "1H"):
             "error": str(e)
         }
 
-# --- News Endpoint ---
+# --- News Endpoint (Now serves from cache) ---
 @app.get("/api/news")
 async def get_news():
-    """Get comprehensive cryptocurrency news from multiple free RSS sources"""
+    """Get latest cryptocurrency news from the in-memory store."""
+    if not news_storage:
+        # Optionally trigger a fetch if cache is empty, or return empty
+        return {"articles": [], "total": 0, "message": "News feed is initializing..."}
+    
+    return {
+        "articles": news_storage,
+        "total": len(news_storage),
+        "sources": list(set(article['source'] for article in news_storage)),
+        "real_data": True,
+        "timestamp": int(time.time() * 1000)
+    }
+
+# --- News WebSocket Endpoint ---
+@app.websocket("/ws/news")
+async def websocket_news_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
     try:
-        # Check cache first
-        if is_cache_valid("news"):
-            return cache["news"]["data"]
-        
-        # Try to fetch real news using the real news fetcher
-        try:
-            from real_news_fetcher import get_100_percent_real_news
-            news_data = await get_100_percent_real_news(25)  # Fetch more articles
-            
-            if not news_data.get('error') and news_data.get('articles'):
-                print(f"✅ Fetched {len(news_data['articles'])} real news articles from {len(news_data.get('sources', []))} sources")
-                
-                # Sort articles by publish time (newest first) to ensure latest news appears first
-                sorted_articles = sorted(
-                    news_data['articles'], 
-                    key=lambda x: x.get('published_at', 0), 
-                    reverse=True
-                )
-                
-                news_response = {
-                    "articles": sorted_articles,
-                    "total": len(sorted_articles),
-                    "sources": news_data.get('sources', []),
-                    "real_data": True,
-                    "timestamp": int(time.time() * 1000),
-                    "last_fetch": int(time.time() * 1000)
-                }
-                
-                # Cache the result with shorter TTL for fresher news
-                cache["news"] = {
-                    "data": news_response,
-                    "timestamp": time.time()
-                }
-                
-                return news_response
-            else:
-                print(f"⚠️ Real news fetcher returned error: {news_data.get('error', 'Unknown error')}")
-                raise Exception("Real news fetcher failed")
-                
-        except ImportError:
-            print("❌ Real news fetcher not available - feedparser not installed")
-            raise Exception("feedparser not installed")
-        except Exception as real_news_error:
-            print(f"❌ Real news fetcher error: {real_news_error}")
-            raise real_news_error
-        
-    except Exception as e:
-        print(f"🔄 Using fallback news data due to: {e}")
-        
-        # Enhanced fallback with realistic crypto news
-        current_time = int(time.time() * 1000)
-        
-        fallback_articles = [
-            {
-                "title": "Bitcoin ETF Inflows Reach New Monthly High",
-                "description": "Institutional investors continue to pour capital into Bitcoin ETFs, with January seeing record inflows of over $2.5 billion across major providers",
-                "url": "https://coindesk.com/bitcoin-etf-inflows",
-                "published_at": current_time - 900000,  # 15 minutes ago
-                "source": "CoinDesk",
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Ethereum Staking Rewards Hit 4.2% APY",
-                "description": "Ethereum validators are earning higher rewards as network activity increases and staking participation grows to new all-time highs",
-                "url": "https://cointelegraph.com/ethereum-staking",
-                "published_at": current_time - 2700000,  # 45 minutes ago
-                "source": "CoinTelegraph", 
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Solana Network Processes 2,000 TPS During Peak Hours",
-                "description": "Solana blockchain demonstrates high throughput capabilities as DeFi activity surges across the ecosystem with new protocol launches",
-                "url": "https://decrypt.co/solana-tps",
-                "published_at": current_time - 4500000,  # 1.25 hours ago
-                "source": "Decrypt",
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Federal Reserve Hints at Crypto Regulation Framework",
-                "description": "Fed officials suggest comprehensive digital asset regulations could be announced in Q2 2025, providing clarity for institutional adoption",
-                "url": "https://coindesk.com/fed-crypto-regulation",
-                "published_at": current_time - 7200000,  # 2 hours ago
-                "source": "CoinDesk",
-                "sentiment": "neutral"
-            },
-            {
-                "title": "DeFi TVL Surpasses $100 Billion Milestone",
-                "description": "Total value locked in decentralized finance protocols reaches new all-time high driven by yield farming and liquid staking innovations",
-                "url": "https://cointelegraph.com/defi-tvl",
-                "published_at": current_time - 10800000,  # 3 hours ago
-                "source": "CoinTelegraph",
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Major Bank Announces Crypto Custody Services",
-                "description": "Traditional financial institution expands digital asset offerings for institutional clients, signaling growing mainstream adoption",
-                "url": "https://decrypt.co/bank-crypto-custody",
-                "published_at": current_time - 14400000,  # 4 hours ago
-                "source": "Decrypt",
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Layer 2 Solutions See 300% Growth in Daily Transactions",
-                "description": "Ethereum scaling solutions experience massive adoption as users seek lower transaction fees and faster settlement times",
-                "url": "https://coindesk.com/layer2-growth",
-                "published_at": current_time - 18000000,  # 5 hours ago
-                "source": "CoinDesk",
-                "sentiment": "bullish"
-            },
-            {
-                "title": "Crypto Market Cap Approaches $4 Trillion",
-                "description": "Combined cryptocurrency market capitalization nears historic milestone amid institutional adoption and retail investor interest",
-                "url": "https://cointelegraph.com/market-cap",
-                "published_at": current_time - 21600000,  # 6 hours ago
-                "source": "CoinTelegraph",
-                "sentiment": "bullish"
-            }
-        ]
-        
-        fallback_response = {
-            "articles": fallback_articles,
-            "total": len(fallback_articles),
-            "sources": ["CoinDesk", "CoinTelegraph", "Decrypt", "The Block", "CryptoSlate"],
-            "real_data": False,
-            "fallback": True,
-            "timestamp": current_time
-        }
-        
-        # Cache fallback data
-        cache["news"] = {
-            "data": fallback_response,
-            "timestamp": time.time()
-        }
-        
-        return fallback_response
+        # Send initial payload of existing news
+        if news_storage:
+            await websocket.send_json({
+                "type": "news_update",
+                "data": news_storage
+            })
+        while True:
+            # Keep the connection alive
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        print(f"Client disconnected. Total clients: {len(manager.active_connections)}")
+
 
 # --- Orderbook Endpoint ---
 @app.get("/api/orderbook/{symbol}")

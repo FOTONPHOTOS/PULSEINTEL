@@ -190,7 +190,7 @@ const RealTimeMetricsGrid: React.FC<RealTimeMetricsGridProps> = ({ selectedAsset
             <span className="text-xs text-slate-400">Live</span>
           </div>
           <h3 className="text-slate-400 text-xs lg:text-sm mb-1 text-container">Global Market Cap</h3>
-          <p className="text-white text-lg lg:text-xl font-bold text-container">${formatMarketCap(metrics.globalMarketCap)}</p>
+          <p className="text-white text-lg lg:text-xl font-bold text-container">{formatMarketCap(metrics.globalMarketCap)}</p>
           <p className="text-slate-500 text-xs text-container">Total Crypto Market</p>
         </div>
 
@@ -201,7 +201,7 @@ const RealTimeMetricsGrid: React.FC<RealTimeMetricsGridProps> = ({ selectedAsset
             <span className="text-xs text-slate-400">Live</span>
           </div>
           <h3 className="text-slate-400 text-xs lg:text-sm mb-1 text-container">24h Volume</h3>
-          <p className="text-white text-lg lg:text-xl font-bold text-container">${formatVolume(metrics.globalVolume)}</p>
+          <p className="text-white text-lg lg:text-xl font-bold text-container">{formatVolume(metrics.globalVolume)}</p>
           <p className="text-slate-500 text-xs text-container">All Exchanges</p>
         </div>
 
@@ -212,7 +212,7 @@ const RealTimeMetricsGrid: React.FC<RealTimeMetricsGridProps> = ({ selectedAsset
             <span className="text-xs text-green-400">Live</span>
           </div>
           <h3 className="text-slate-400 text-xs lg:text-sm mb-1 text-container">{selectedAsset.replace('USDT', '')} Price</h3>
-          <p className="text-white text-lg lg:text-xl font-bold text-container">${formatPrice(metrics.price)}</p>
+          <p className="text-white text-lg lg:text-xl font-bold text-container">{formatPrice(metrics.price)}</p>
           <p className={`text-xs text-container ${metrics.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {metrics.change24h >= 0 ? '+' : ''}{metrics.change24h.toFixed(2)}%
           </p>
@@ -225,7 +225,7 @@ const RealTimeMetricsGrid: React.FC<RealTimeMetricsGridProps> = ({ selectedAsset
             <span className="text-xs text-green-400">Live</span>
           </div>
           <h3 className="text-slate-400 text-xs lg:text-sm mb-1 text-container">VWAP</h3>
-          <p className="text-white text-lg lg:text-xl font-bold text-container">${formatPrice(metrics.vwap)}</p>
+          <p className="text-white text-lg lg:text-xl font-bold text-container">{formatPrice(metrics.vwap)}</p>
           <p className="text-slate-500 text-xs text-container">Volume Weighted</p>
         </div>
 

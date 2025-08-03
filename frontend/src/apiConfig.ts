@@ -10,15 +10,7 @@
 // -----------------------------------------------------------------------------
 // Environment Detection & Type Safety
 // -----------------------------------------------------------------------------
-declare const process: {
-  env: {
-    NODE_ENV?: string;
-    REACT_APP_WEBSOCKET_URL?: string;
-    REACT_APP_API_URL?: string;
-  };
-};
-
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const IS_DEVELOPMENT = import.meta.env.MODE === 'development';
 
 // -----------------------------------------------------------------------------
 // Service Base URLs - CORRECT ARCHITECTURE
@@ -29,32 +21,32 @@ const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 const API_BASE_URLS = {
   // Service 1: WebSocket Service (Connected to Go Engine)
   // Connects to Go engine, processes real-time data (VWAP, CVD), forwards to frontend
-  WEBSOCKET_SERVICE: process.env.REACT_APP_WEBSOCKET_URL || (IS_DEVELOPMENT
-    ? 'ws://localhost:8000'
-    : 'wss://your-production-websocket-service.com'),
+  WEBSOCKET_SERVICE: import.meta.env.VITE_WEBSOCKET_URL || 
+                     (process.env as any).REACT_APP_WEBSOCKET_URL || 
+                     (IS_DEVELOPMENT ? 'ws://localhost:8000' : 'wss://your-production-websocket-service.com'),
 
   // Service 2: REST API Service (Independent)
   // Pulls external REST API data (CoinGecko, Binance, etc.) to avoid bottlenecks
-  REST_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
-    ? 'http://localhost:8001'
-    : 'https://your-production-api.com'),
+  REST_API_SERVICE: import.meta.env.VITE_API_URL || 
+                    (process.env as any).REACT_APP_API_URL || 
+                    (IS_DEVELOPMENT ? 'http://localhost:8001' : 'https://your-production-api.com'),
 
   // All REST endpoints route through the API service
-  ANALYTICS_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
-    ? 'http://localhost:8001'
-    : 'https://your-production-analytics-api.com'),
+  ANALYTICS_API_SERVICE: import.meta.env.VITE_API_URL || 
+                         (process.env as any).REACT_APP_API_URL || 
+                         (IS_DEVELOPMENT ? 'http://localhost:8001' : 'https://your-production-analytics-api.com'),
 
-  EXTERNAL_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
-    ? 'http://localhost:8001'
-    : 'https://your-production-external-api.com'),
+  EXTERNAL_API_SERVICE: import.meta.env.VITE_API_URL || 
+                        (process.env as any).REACT_APP_API_URL || 
+                        (IS_DEVELOPMENT ? 'http://localhost:8001' : 'https://your-production-external-api.com'),
 
-  HISTORICAL_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
-    ? 'http://localhost:8001'
-    : 'https://your-production-historical-api.com'),
+  HISTORICAL_API_SERVICE: import.meta.env.VITE_API_URL || 
+                          (process.env as any).REACT_APP_API_URL || 
+                          (IS_DEVELOPMENT ? 'http://localhost:8001' : 'https://your-production-historical-api.com'),
 
-  MAIN_API_SERVICE: process.env.REACT_APP_API_URL || (IS_DEVELOPMENT
-    ? 'http://localhost:8001'
-    : 'https://your-production-api.com'),
+  MAIN_API_SERVICE: import.meta.env.VITE_API_URL || 
+                    (process.env as any).REACT_APP_API_URL || 
+                    (IS_DEVELOPMENT ? 'http://localhost:8001' : 'https://your-production-api.com'),
     
   // Legacy services
   LEGACY_PRECISION9_API: IS_DEVELOPMENT
