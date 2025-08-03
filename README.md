@@ -5,9 +5,9 @@
 
 **PulseIntel** is a professional-grade, real-time cryptocurrency market intelligence platform designed for traders, analysts, and institutions. It provides comprehensive market data, advanced analytics, and actionable insights.
 
-## ✨ Features
+## Features
 
-### 📊 **Real-Time Market Data**
+###  **Real-Time Market Data**
 - **Live Price Feeds**: WebSocket-powered real-time price updates with 2-decimal precision
 - **Global Market Metrics**: Live global market cap and 24h volume from CoinGecko API
 - **Multi-Exchange Data**: Aggregated data from major cryptocurrency exchanges
@@ -19,20 +19,20 @@
 - **Touch-Optimized**: Proper touch targets and smooth animations
 - **Real-Time Price Display**: Always-visible live price updates in header
 
-### 🔍 **Advanced Analytics**
+### **Advanced Analytics**
 - **Market Microstructure**: Deep order book analysis and liquidity tracking
 - **Smart Money Tracking**: Institutional flow detection and whale movements
 - **Cross-Exchange Arbitrage**: Real-time arbitrage opportunities
 - **Funding Rate Analysis**: Comprehensive funding rate monitoring across exchanges
 - **Sentiment Analysis**: Market sentiment indicators and fear/greed index
 
-### 📈 **Professional Tools**
+###  **Professional Tools**
 - **Advanced Orderbook**: Multi-level order book visualization with heatmaps
 - **Volatility Matrix**: Real-time volatility analysis across timeframes
 - **Liquidation Analytics**: Liquidation cascade detection and analysis
 - **News Integration**: Real-time crypto news feed with RSS aggregation
 
-## 🏗️ Architecture
+##  Architecture
 
 PulseIntel follows a modern microservices architecture:
 
@@ -100,14 +100,14 @@ npm run dev
 5. Access the Platform
 Open your browser and navigate to: http://localhost:5174
 
-📊 Data Sources & APIs
+Data Sources & APIs
 External Data Sources
 CoinGecko API: Global market cap and volume data
 Binance API: Real-time price feeds and market data
 Multiple Exchange APIs: Comprehensive market coverage
 RSS News Feeds: Crypto news aggregation
 Data Disclaimer
-⚠️ Important: This platform aggregates data from various external sources including:
+Important: This platform aggregates data from various external sources including:
 
 CoinGecko API for global market statistics
 Exchange APIs for real-time trading data
@@ -117,7 +117,7 @@ Data Accuracy: While we strive for accuracy, external data sources may experienc
 
 No Financial Advice: This platform is for informational purposes only and does not constitute financial advice. Trading cryptocurrencies involves substantial risk of loss.
 
-🔧 Configuration
+Configuration
 API Configuration (frontend/src/apiConfig.ts)
 export const apiConfig = {
   WEBSOCKET_SERVICE: 'ws://localhost:8000',
@@ -177,7 +177,7 @@ Submit a pull request
 📄 License
 This project is proprietary software. All rights reserved.
 
-🆘 Support
+Support
 For technical support or questions:
 
 Check the logs in each service for error messages
@@ -185,3 +185,4 @@ Ensure all services are running on correct ports
 Verify API keys and configurations
 Monitor WebSocket connection status in the frontend
 Built with ❤️ for the crypto trading community
+contact: fotonphotos1@gmail.com for more inquiry 
