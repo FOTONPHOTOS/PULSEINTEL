@@ -1,4 +1,7 @@
 # 🚀 PulseIntel - Real-Time Crypto Market Intelligence Platform
+# Dashboard Preview
+
+![Dashboard Screenshot](frontend/src/assets/dashboard.png)
 
 **PulseIntel** is a professional-grade, real-time cryptocurrency market intelligence platform designed for traders, analysts, and institutions. It provides comprehensive market data, advanced analytics, and institutional-level insights through a modern, responsive web interface.
 
