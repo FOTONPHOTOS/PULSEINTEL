@@ -1,4 +1,5 @@
 # PulseIntel - Real-Time Crypto Market Intelligence Platform
+https://app.precision9bot.com
 # Dashboard Preview
 
 ![Dashboard Screenshot](frontend/src/assets/dashboard.png)
