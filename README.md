@@ -1,5 +1,7 @@
 # PulseIntel - Real-Time Crypto Market Intelligence Platform
 https://app.precision9bot.com
+
+# NB: I'm running the web locally using cloudflare and it won't be up all the time 
 # Dashboard Preview
 
 ![Dashboard Screenshot](frontend/src/assets/dashboard.png)
