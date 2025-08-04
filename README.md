@@ -4,7 +4,7 @@ https://app.precision9bot.com
 # NB: I'm running the web locally using cloudflare and it won't be up all the time 
 # Dashboard Preview
 
-![Dashboard video](frontend/src/assets/Pulseintel_Preview.mp4)
+![Dashboard Screenshot](frontend/src/assets/dashboard.png)
 
 https://youtu.be/bIb3vXMvVu4?feature=shared
 
