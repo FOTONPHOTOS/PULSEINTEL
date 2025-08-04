@@ -4,7 +4,7 @@ https://app.precision9bot.com
 # NB: I'm running the web locally using cloudflare and it won't be up all the time 
 # Dashboard Preview
 
-![Dashboard Screenshot](frontend/src/assets/dashboard.png)
+![Dashboard video](frontend/src/assets/Pulseintel_Preview.mp4)
 
 **PulseIntel** is a professional-grade, real-time cryptocurrency market intelligence platform designed for traders, analysts, and institutions. It provides comprehensive market data, advanced analytics, and actionable insights.
 
