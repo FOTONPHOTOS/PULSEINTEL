@@ -6,6 +6,8 @@ https://app.precision9bot.com
 
 ![Dashboard video](frontend/src/assets/Pulseintel_Preview.mp4)
 
+
+
 **PulseIntel** is a professional-grade, real-time cryptocurrency market intelligence platform designed for traders, analysts, and institutions. It provides comprehensive market data, advanced analytics, and actionable insights.
 
 ## Features
