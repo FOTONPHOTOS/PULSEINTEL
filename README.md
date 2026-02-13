@@ -139,7 +139,8 @@ Responsive Breakpoints: Mobile (<768px), Tablet (<1024px), Desktop (>1024px)
 Touch Interface: Optimized for touch interactions
 Collapsible Navigation: Space-efficient mobile menu
 Adaptive Components: Charts and tables adjust to screen size
-🛠️ Development
+ Development
+
 Project Structure
 pulseintel/
 ├── go_Stream/              # Go data ingestion engine
@@ -156,17 +157,18 @@ pulseintel/
 ├── pulseintel_websocket_service.py  # WebSocket server
 ├── pulseintel_api_service.py        # REST API server
 └── real_news_fetcher.py             # News aggregation service
+
 Key Technologies
 Frontend: React 18, TypeScript, Tailwind CSS, Recharts
 Backend: Python FastAPI, WebSockets, asyncio
 Data Engine: Go, WebSocket clients, JSON processing
 Real-time: WebSocket connections, Server-Sent Events
-🔒 Security & Performance
+ Security & Performance
 Rate Limiting: Built-in protection against API abuse
 CORS Configuration: Secure cross-origin resource sharing
 WebSocket Security: Connection validation and cleanup
 Performance Optimization: Efficient data streaming and caching
-📈 Monitoring & Logging
+ Monitoring & Logging
 The platform includes comprehensive monitoring:
 
 Real-time connection status indicators
